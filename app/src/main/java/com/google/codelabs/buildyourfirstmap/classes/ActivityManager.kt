@@ -1,4 +1,4 @@
-package com.google.codelabs.buildyourfirstmap.Classes
+package com.google.codelabs.buildyourfirstmap.classes
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 

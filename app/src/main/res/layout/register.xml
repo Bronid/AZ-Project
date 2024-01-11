@@ -1,0 +1,76 @@
+<!-- res/layout/activity_registration.xml -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_centerVertical="true"
+    tools:context=".RegisterActivity">
+
+    <TextView
+        android:id="@+id/textViewWelcomeMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Welcome to the Zone, artifact hunter..."
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/editTextLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewWelcomeMessage"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
+        android:hint="Login"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextLogin"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="4dp"
+        android:hint="Password"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/editTextRepeatPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextPassword"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="4dp"
+        android:hint="Retype Password"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/buttonRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextRepeatPassword"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8dp"
+        android:text="Register" />
+
+    <TextView
+        android:id="@+id/textViewAlreadyRegistered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/buttonRegister"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="Already registered? Click here"
+        android:textColor="@color/colorAccent"
+        android:clickable="true"
+        android:onClick="onAlreadyRegisteredClick"
+        tools:ignore="OnClick" />
+
+</RelativeLayout>
+
+
+
+

@@ -1,9 +1,11 @@
 package com.google.codelabs.buildyourfirstmap
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -34,6 +36,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             requestLocationUpdates()
         } else {
             requestLocationPermissions()
+        }
+
+        val tempRegisterButton: Button = findViewById(R.id.inventory_button)
+        tempRegisterButton.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
         }
     }
 

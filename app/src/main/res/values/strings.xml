@@ -16,4 +16,5 @@
 
 <resources>
   <string name="app_name">BuildYourFirstMap</string>
+  <string name="button_start">Go to the raid!</string>
 </resources>
