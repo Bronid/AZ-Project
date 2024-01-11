@@ -8,13 +8,13 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 34
     buildToolsVersion "29.0.3"
 
     defaultConfig {
         applicationId "com.google.codelabs.buildyourfirstmap"
         minSdk 21
-        targetSdk 32
+        targetSdk 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -38,7 +38,7 @@ dependencies {
 
     // Dependency to include Maps SDK for Android
     implementation 'com.google.android.gms:play-services-maps:18.0.2'
-
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 
     testImplementation 'junit:junit:4.13.2'
 }

@@ -1,64 +1,142 @@
-// Copyright 2020 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package com.google.codelabs.buildyourfirstmap
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.codelabs.buildyourfirstmap.place.Place
-import com.google.codelabs.buildyourfirstmap.place.PlacesReader
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    private var fusedLocationClient: FusedLocationProviderClient? = null
+    private var googleMap: GoogleMap? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val mapFragment = supportFragmentManager.findFragmentById(
-            R.id.map_fragment
-        ) as? SupportMapFragment
-        mapFragment?.getMapAsync { googleMap ->
-            addMarkers(googleMap);
-            googleMap.setInfoWindowAdapter(MarkerInfoWindowAdapter(this))
+
+        // Check for location permissions and request if not granted
+        if (areLocationPermissionsGranted()) {
+            initMap()
+            requestLocationUpdates()
+        } else {
+            requestLocationPermissions()
         }
     }
 
-    private val places: List<Place> by lazy {
-        PlacesReader(this).read()
-    }
-
-    private val bicycleIcon: BitmapDescriptor by lazy {
-        val color = ContextCompat.getColor(this, R.color.colorPrimary)
-        BitmapHelper.vectorToBitmap(this, R.drawable.ic_directions_bike_black_24dp, color)
-    }
-    private fun addMarkers(googleMap: GoogleMap) {
-        places.forEach { place ->
-            val marker = googleMap.addMarker(
-                MarkerOptions()
-                    .title(place.name)
-                    .position(place.latLng)
-                    .icon(bicycleIcon)
-            )
-
-            if (marker != null) {
-                marker.tag = place
+    private fun initMap() {
+        val mapFragment =
+            supportFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
+        mapFragment?.getMapAsync { map ->
+            googleMap = map
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestLocationPermissions()
             }
-
+            googleMap?.isMyLocationEnabled = true
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            requestLocationUpdates()
         }
     }
 
+    private fun requestLocationUpdates() {
+        val locationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(5000)
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient?.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                null
+            )
+        }
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            locationResult.lastLocation?.let { location ->
+                onLocationChanged(location)
+            }
+        }
+    }
+
+    private fun onLocationChanged(location: Location) {
+        val currentLatLng = LatLng(location.latitude, location.longitude)
+        googleMap?.clear()
+        googleMap?.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+    }
+
+    private fun areLocationPermissionsGranted(): Boolean {
+        return (ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun requestLocationPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ),
+            LOCATION_PERMISSION_REQUEST_CODE
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                initMap()
+            } else {
+                // Handle the case where permissions are not granted
+            }
+        }
+    }
+
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
+    }
+
+    override fun onMapReady(p0: GoogleMap) {
+        TODO("Not yet implemented")
+    }
 }
+
+
