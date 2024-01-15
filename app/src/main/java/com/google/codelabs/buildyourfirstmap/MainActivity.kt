@@ -1,217 +1,90 @@
 package com.google.codelabs.buildyourfirstmap
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Color
-import android.location.Location
+import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Circle
-import com.google.android.gms.maps.model.CircleOptions
-import java.util.*
+import com.google.codelabs.buildyourfirstmap.classes.User
+import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
+import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity() {
 
-    private var fusedLocationClient: FusedLocationProviderClient? = null
-    private var googleMap: GoogleMap? = null
-    private var currentLatLng: LatLng? = null
-
+    lateinit var activeUser: User
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Check for location permissions and request if not granted
-        if (areLocationPermissionsGranted()) {
-            initMap()
-            requestLocationUpdates()
-        } else {
-            requestLocationPermissions()
-        }
+        val userLogin: EditText = findViewById(R.id.editTextLogin)
+        val userPassword: EditText = findViewById(R.id.editTextPassword)
+        val button: Button = findViewById(R.id.buttonLogin)
+        val linkToRegister: TextView = findViewById(R.id.textViewNeedAccount)
 
-        val tempRegisterButton: Button = findViewById(R.id.inventory_button)
-        tempRegisterButton.setOnClickListener {
+        linkToRegister.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
-    }
 
-    private fun initMap() {
-        val mapFragment =
-            supportFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
-        mapFragment?.getMapAsync { map ->
-            googleMap = map
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestLocationPermissions()
-            }
-            googleMap?.isMyLocationEnabled = true
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-            requestLocationUpdates()
-        }
-    }
+        button.setOnClickListener {
+            val login = userLogin.text.toString().trim()
+            val password = userPassword.text.toString().trim()
 
-    private fun requestLocationUpdates() {
-        val locationRequest = LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(5000)
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationClient?.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                null
-            )
-        }
-    }
-
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            locationResult.lastLocation?.let { location ->
-                onLocationChanged(location)
-            }
-        }
-    }
-
-    private fun onLocationChanged(location: Location) {
-        currentLatLng = LatLng(location.latitude, location.longitude)
-
-        // Проверяем коллизии с каждой зоной заражения
-        for (zone in infectionZones) {
-            if (isInCollision(currentLatLng!!, zone)) {
-                // В случае коллизии выводим сообщение в консоль
-                println("Hello world")
-                break // Если коллизия уже обнаружена, выходим из цикла
-            }
-        }
-
-        //googleMap?.clear()
-        // googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng!!, 15f))
-
-        if (googleMap != null) {
-            onMapReady(googleMap!!)
-        }
-    }
-
-    private fun areLocationPermissionsGranted(): Boolean {
-        return (ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
-    }
-
-    private fun requestLocationPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ),
-            LOCATION_PERMISSION_REQUEST_CODE
-        )
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                initMap()
+            if (login.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Fill all fields", Toast.LENGTH_LONG).show()
             } else {
-                // Handle the case where permissions are not granted
+                // Execute AsyncTask for login
+                LoginAsyncTask().execute(login, password)
             }
         }
     }
 
-    companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 1
-    }
+    private inner class LoginAsyncTask : AsyncTask<String, Void, User?>() {
 
-    private val infectionZones = mutableListOf<Circle>()
+        override fun doInBackground(vararg params: String): User? {
+            val login = params[0]
+            val password = params[1]
 
-    override fun onMapReady(p0: GoogleMap) {
-        // Генерируем случайные зоны заражения (круги) на карте
-        if (currentLatLng != null) {
-            for (i in 1..5) { // Создаем 5 зон
-                val randomLatLng = generateRandomLatLng(currentLatLng!!)
-                val radius = 100.0 // Радиус круга в метрах (пример)
-                val circleOptions = CircleOptions()
-                    .center(randomLatLng)
-                    .radius(radius)
-                    .strokeWidth(2f)
-                    .strokeColor(Color.RED)
-                    .fillColor(Color.argb(70, 255, 0, 0))
+            val mongoDBManager = MongoDBManager()
+            return mongoDBManager.getUserByLoginAndPassword(login, password)
+        }
 
-                val circle = googleMap?.addCircle(circleOptions)
-                circle?.let { infectionZones.add(it) }
+        override fun onPostExecute(result: User?) {
+            if (result != null) {
+                Toast.makeText(applicationContext, "User logged", Toast.LENGTH_LONG).show()
+                activeUser = result
+                // Execute AsyncTask for retrieving character information
+                GetCharacterAsyncTask().execute(result.login)
+            } else {
+                Toast.makeText(applicationContext, "Login or password incorrect", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun generateRandomLatLng(currentLatLng: LatLng): LatLng {
-        val random = Random()
+    private inner class GetCharacterAsyncTask : AsyncTask<String, Void, PlayerCharacter?>() {
 
-        // Определяем коэффициенты ограничения
-        val latDeviation = 0.1
-        val lngDeviation = 0.1
+        override fun doInBackground(vararg params: String): PlayerCharacter? {
+            val userLogin = params[0]
 
-        // Генерируем случайные координаты в заданном диапазоне от текущей GPS-метки
-        val lat = currentLatLng.latitude + (random.nextDouble() - 0.5) * latDeviation
-        val lng = currentLatLng.longitude + (random.nextDouble() - 0.5) * lngDeviation
+            val mongoDBManager = MongoDBManager()
+            return mongoDBManager.getPlayerCharacterByUserLogin(userLogin)
+        }
 
-        return LatLng(lat, lng)
+        override fun onPostExecute(character: PlayerCharacter?) {
+            if (character == null) {
+                val intent = Intent(this@MainActivity, CreateCharacterActivity::class.java)
+                intent.putExtra("user", activeUser) // "user" - key for passing the User object
+                startActivity(intent)
+            } else {
+                // Proceed to the next activity and pass the User and Character objects
+                val intent = Intent(this@MainActivity, MapActivity::class.java)
+                intent.putExtra("user", activeUser)
+                intent.putExtra("character", character)
+                startActivity(intent)
+            }
+        }
     }
-
-
-    // Метод для проверки коллизии текущего местоположения с кругом
-    private fun isInCollision(currentLatLng: LatLng, circle: Circle): Boolean {
-        val distance = calculateDistance(currentLatLng, circle.center)
-        return distance < circle.radius
-    }
-
-
-    // Метод для вычисления расстояния между двумя точками на карте
-    private fun calculateDistance(point1: LatLng, point2: LatLng): Float {
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            point1.latitude, point1.longitude,
-            point2.latitude, point2.longitude,
-            results
-        )
-        return results[0]
-    }
-
 }
-
-

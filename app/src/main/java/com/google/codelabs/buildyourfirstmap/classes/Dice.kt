@@ -1,8 +1,9 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
+import java.io.Serializable
 import kotlin.random.Random
 
-class Dice(val type: DiceType) {
+class Dice(val type: DiceType) : Serializable {
 
     enum class DiceType {
         D4, D6, D8, D10, D12, D20

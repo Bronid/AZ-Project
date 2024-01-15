@@ -40,7 +40,10 @@
             android:name=".RegisterActivity">
         </activity>
         <activity
-            android:name=".LoginActivity">
+            android:name=".MapActivity">
+        </activity>
+        <activity android:name=".CreateCharacterActivity">
+            <!-- Add any additional configuration you may need -->
         </activity>
   <activity android:name=".MainActivity"
       android:exported="true">

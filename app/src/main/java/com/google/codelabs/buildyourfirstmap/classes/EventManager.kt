@@ -45,7 +45,7 @@ class GameEventBase(
         hostile = HostileRepository.getRandomHostileByEventLevel(eventLevel)?.copy()
     }
 }
-class EventManager(private val character: Character) {
+class EventManager(private val character: PlayerCharacter) {
     private val scheduler = Executors.newSingleThreadScheduledExecutor()
     private val interval = 15L
 

@@ -17,4 +17,8 @@
 <resources>
   <string name="app_name">BuildYourFirstMap</string>
   <string name="button_start">Go to the raid!</string>
+  <string name="nickname">Nickname</string>
+  <string name="description">Description</string>
+  <string name="points_remaining">Points Remaining: %d</string>
+  <string name="create_character">Create Character</string>
 </resources>

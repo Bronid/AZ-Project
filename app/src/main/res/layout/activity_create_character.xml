@@ -1,0 +1,76 @@
+<!-- res/layout/activity_create_character.xml -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="16dp"
+    tools:context=".CreateCharacterActivity">
+
+    <TextView
+        android:id="@+id/textViewPointsRemaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/points_remaining"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"
+        android:textColor="@android:color/black"/>
+
+    <EditText
+        android:id="@+id/editTextNickname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/nickname"
+        android:layout_below="@+id/textViewPointsRemaining"
+        android:layout_marginTop="16dp"/>
+
+    <EditText
+        android:id="@+id/editTextDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/description"
+        android:layout_below="@+id/editTextNickname"
+        android:layout_marginTop="8dp"/>
+
+    <SeekBar
+        android:id="@+id/seekBarStrength"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editTextDescription"
+        android:layout_marginTop="16dp"
+        android:max="5"
+        android:thumb="@android:color/darker_gray"
+        android:progress="0"/>
+
+    <SeekBar
+        android:id="@+id/seekBarAgility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarStrength"
+        android:layout_marginTop="8dp"
+        android:max="5"
+        android:thumb="@android:color/darker_gray"
+        android:progress="0"/>
+
+    <SeekBar
+        android:id="@+id/seekBarConstitution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarAgility"
+        android:layout_marginTop="8dp"
+        android:max="5"
+        android:thumb="@android:color/darker_gray"
+        android:progress="0"/>
+
+    <Button
+        android:id="@+id/buttonCreateCharacter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarConstitution"
+        android:layout_marginTop="16dp"
+        android:text="@string/create_character"/>
+</RelativeLayout>

@@ -23,7 +23,7 @@ class RegisterActivity : AppCompatActivity() {
         val linkToLogin: TextView = findViewById(R.id.textViewAlreadyRegistered)
 
         linkToLogin.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 

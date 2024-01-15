@@ -1,5 +1,6 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
+import java.io.Serializable
 import java.util.Stack
 
 class LevelManager {
@@ -27,17 +28,19 @@ class LevelManager {
     }
 }
 
-data class Character(
+data class PlayerCharacter(
+    var userLogin: String,
     var nickname: String,
     var description: String,
     var currentExperience: Int,
     var inventory: MutableList<GameItem>,
     var armor: GameItemArmor?,
     var weapon: GameItemWeapon?,
+    var skillPoints: Int,
     var strength: Int, // модификатор урона
     var agility: Int, // повышает защиту
     var constitution: Int, // здоровье
-) {
+) : Serializable {
     private var health = getMaxHealth()
     private var isKnocked = false
     private var level = LevelManager.calculateLevel(currentExperience)
