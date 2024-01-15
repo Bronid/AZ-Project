@@ -3,6 +3,7 @@ package com.google.codelabs.buildyourfirstmap
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.widget.Button
@@ -20,11 +21,17 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
+import kotlin.math.pow
+import kotlin.math.sqrt
+import java.util.*
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var fusedLocationClient: FusedLocationProviderClient? = null
     private var googleMap: GoogleMap? = null
+    private var currentLatLng: LatLng? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,10 +103,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun onLocationChanged(location: Location) {
-        val currentLatLng = LatLng(location.latitude, location.longitude)
-        googleMap?.clear()
-        googleMap?.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+        currentLatLng = LatLng(location.latitude, location.longitude)
+
+        // Проверяем коллизии с каждой зоной заражения
+        for (zone in infectionZones) {
+            if (isInCollision(currentLatLng!!, zone)) {
+                // В случае коллизии выводим сообщение в консоль
+                println("Hello world")
+                break // Если коллизия уже обнаружена, выходим из цикла
+            }
+        }
+
+        //googleMap?.clear()
+        // googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng!!, 15f))
+
+        if (googleMap != null) {
+            onMapReady(googleMap!!)
+        }
     }
 
     private fun areLocationPermissionsGranted(): Boolean {
@@ -142,9 +162,60 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
+    private val infectionZones = mutableListOf<Circle>()
+
     override fun onMapReady(p0: GoogleMap) {
-        TODO("Not yet implemented")
+        // Генерируем случайные зоны заражения (круги) на карте
+        if (currentLatLng != null) {
+            for (i in 1..5) { // Создаем 5 зон
+                val randomLatLng = generateRandomLatLng(currentLatLng!!)
+                val radius = 100.0 // Радиус круга в метрах (пример)
+                val circleOptions = CircleOptions()
+                    .center(randomLatLng)
+                    .radius(radius)
+                    .strokeWidth(2f)
+                    .strokeColor(Color.RED)
+                    .fillColor(Color.argb(70, 255, 0, 0))
+
+                val circle = googleMap?.addCircle(circleOptions)
+                circle?.let { infectionZones.add(it) }
+            }
+        }
     }
+
+    private fun generateRandomLatLng(currentLatLng: LatLng): LatLng {
+        val random = Random()
+
+        // Определяем коэффициенты ограничения
+        val latDeviation = 0.1
+        val lngDeviation = 0.1
+
+        // Генерируем случайные координаты в заданном диапазоне от текущей GPS-метки
+        val lat = currentLatLng.latitude + (random.nextDouble() - 0.5) * latDeviation
+        val lng = currentLatLng.longitude + (random.nextDouble() - 0.5) * lngDeviation
+
+        return LatLng(lat, lng)
+    }
+
+
+    // Метод для проверки коллизии текущего местоположения с кругом
+    private fun isInCollision(currentLatLng: LatLng, circle: Circle): Boolean {
+        val distance = calculateDistance(currentLatLng, circle.center)
+        return distance < circle.radius
+    }
+
+
+    // Метод для вычисления расстояния между двумя точками на карте
+    private fun calculateDistance(point1: LatLng, point2: LatLng): Float {
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            point1.latitude, point1.longitude,
+            point2.latitude, point2.longitude,
+            results
+        )
+        return results[0]
+    }
+
 }
 
 
