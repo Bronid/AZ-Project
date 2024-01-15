@@ -1,31 +1,124 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
+import java.util.Stack
+
+class LevelManager {
+    companion object {
+        private val experienceThresholds = mapOf(
+            1 to 0,
+            2 to 200,
+            3 to 400,
+            4 to 800,
+            5 to 1600,
+            6 to 3200,
+            7 to 6400,
+            8 to 12800,
+            9 to 25600,
+            10 to 51200
+        )
+
+        fun calculateLevel(currentExperience: Int): Int {
+            var level = 1
+            while (experienceThresholds[level + 1] != null && currentExperience >= experienceThresholds[level + 1]!!) {
+                level++
+            }
+            return level
+        }
+    }
+}
+
 data class Character(
-    val nickname: String,
-    val description: String,
-    val registrationDate: String,
-    val totalExperience: Long,
-    val currentExperience: Long,
-    val level: Int,
-    val currentTask: Task?,
-    val currentMoney: Int,
-    val inventory: Inventory,
-    val globalGoal: String,
-    val health: Int,
-    val defense: Int,
-    val damage: Dice,
-    val statistics: CharacterStatistics,
-    val skills: List<Skill>
-)
+    var nickname: String,
+    var description: String,
+    var currentExperience: Int,
+    var inventory: MutableList<GameItem>,
+    var armor: GameItemArmor?,
+    var weapon: GameItemWeapon?,
+    var strength: Int, // модификатор урона
+    var agility: Int, // повышает защиту
+    var constitution: Int, // здоровье
+) {
+    private var health = getMaxHealth()
+    private var isKnocked = false
+    private var level = LevelManager.calculateLevel(currentExperience)
+    private var damage: Stack<Dice> = Stack()
 
-data class Task(val name: String, val description: String, val deadline: String)
+    init {
+        health = getMaxHealth()
+        level = LevelManager.calculateLevel(currentExperience)
+        updateDamage()
+    }
 
-data class Inventory(val items: List<Item>)
+    fun updateDamage(){
+        damage.clear()
+        if (weapon == null){
+            damage.push(Dice(Dice.DiceType.D4))
+        }
+        else {
+            for (dice in weapon!!.getWeaponDamage()) {
+                damage.push(dice)
+            }
+        }
+    }
 
-data class Item(val name: String, val description: String, val quantity: Int)
+    fun updateLevel(){
+        level = LevelManager.calculateLevel(currentExperience)
+    }
 
-data class Dice(val numberOfDice: Int, val sides: Int)
+    fun isKnocked(): Boolean {
+        return isKnocked
+    }
 
-data class CharacterStatistics(val monstersKilled: Int, val deaths: Int)
+    fun changeHealth(num: Int) {
+        if (health + num <= 0){
+            health = 0
+            isKnocked = true
+            return
+        }
+        else if(health + num > getMaxHealth()){
+            health = getMaxHealth()
+            return
+        }
+        else {
+            health += num
+        }
+    }
 
-data class Skill(val name: String, val description: String)
+    fun getCurrentHealth(): Int{
+        return health
+    }
+
+    fun getMaxHealth(): Int {
+        return ((5 + constitution) + (level * 2))
+    }
+
+    fun attack(): Int {
+        var totalDamage = 0
+        for (dice in damage) {
+            totalDamage += dice.roll()
+        }
+        return totalDamage
+    }
+}
+
+class HostileCharacter(
+    val name: String,
+    var health: Int,
+    val appearanceText: String,
+    val diceList: List<Dice>,
+    val dangerLevel: EventLevel,
+    val exp: Int,
+    val loot: List<GameItem>
+) {
+    fun copy(): HostileCharacter {
+        return HostileCharacter(name, health, appearanceText, diceList.map { it.copy() }, dangerLevel, exp, loot.toMutableList())
+    }
+
+    fun attack(): Int {
+        var totalDamage = 0
+        for (dice in diceList) {
+            totalDamage += dice.roll()
+        }
+        return totalDamage
+    }
+}
