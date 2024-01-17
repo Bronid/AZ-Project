@@ -45,53 +45,52 @@ class GameEventBase(
         hostile = HostileRepository.getRandomHostileByEventLevel(eventLevel)?.copy()
     }
 }
-class EventManager(private val character: PlayerCharacter) {
-    private val scheduler = Executors.newSingleThreadScheduledExecutor()
-    private val interval = 15L
-
-    init {
-        startEvents()
-    }
-
-    private fun startEvents() {
-        val eventTask = Runnable {
-            generateRandomEvent()
+class EventManager(private val character: PlayerCharacter){
+    var inBattle = false
+    var currentEnemy: HostileCharacter? = null
+    var currentPlayerTurn = false
+    fun generateRandomEvent() : String {
+        if (inBattle) {
+            currentEnemy?.let { return turnBattle(it) }
         }
-        scheduler.scheduleAtFixedRate(eventTask, 0, interval, TimeUnit.SECONDS)
-    }
-
-    private fun generateRandomEvent() {
+        else {
         val randomEvent = generateRandomGameEvent()
         println("Event: ${randomEvent.eventText}")
 
-        when (randomEvent.eventType) {
-            GameEventBase.EventType.POSITIVE -> handlePositiveEvent(randomEvent)
-            GameEventBase.EventType.NEUTRAL -> handleNeutralEvent(randomEvent)
-            GameEventBase.EventType.NEGATIVE -> handleNegativeEvent(randomEvent)
+            when (randomEvent.eventType) {
+                GameEventBase.EventType.POSITIVE -> return handlePositiveEvent(randomEvent)
+                GameEventBase.EventType.NEUTRAL -> return handleNeutralEvent(randomEvent)
+                GameEventBase.EventType.NEGATIVE -> return handleNegativeEvent(randomEvent)
+            }
         }
+        return "error"
     }
 
-    private fun handlePositiveEvent(event: GameEventBase) {
-        val item =
-
-            event.item
+    private fun handlePositiveEvent(event: GameEventBase) : String {
+        val item = event.item
         if (item is GameItemHeal) {
-            println("You found a healing item: ${item.name}")
+            val text = "You found a item: ${item.name}"
+            println(text)
             character.inventory.add(item)
+            return text
         }
+        return ""
         // Handle other positive events if needed
     }
 
-    private fun handleNeutralEvent(event: GameEventBase) {
-        // Implement logic for handling neutral events if needed
+    private fun handleNeutralEvent(event: GameEventBase) : String {
+        return "Just walking"
     }
 
-    private fun handleNegativeEvent(event: GameEventBase) {
+    private fun handleNegativeEvent(event: GameEventBase) : String {
         val hostile = event.hostile
         if (hostile != null) {
-            println("A wild ${hostile.name} appeared!")
+            val text = "A wild ${hostile.name} appeared!"
+            println(text)
             startBattle(hostile)
+            return text
         }
+        return ""
         // Handle other negative events if needed
     }
 
@@ -105,48 +104,63 @@ class EventManager(private val character: PlayerCharacter) {
         println("Initiative - You: $playerInitiative, ${hostile.name}: $hostileInitiative")
 
         // Determine who goes first based on initiative
-        var currentPlayerTurn = playerInitiative >= hostileInitiative
+        currentPlayerTurn = playerInitiative >= hostileInitiative
+        currentEnemy = hostile
+        inBattle = true
+    }
 
-        while (!character.isKnocked() && hostile.health > 0) {
+    private fun turnBattle(hostile: HostileCharacter): String {
+        var text = ""
+
+        if (!character.isKnocked() && hostile.health > 0) {
             if (currentPlayerTurn) {
                 // Player's turn
                 val playerDamage = character.attack()
-                println("You dealt $playerDamage damage to ${hostile.name}")
-                hostile.health -= playerDamage
+                text = "You dealt $playerDamage damage to ${hostile.name}"
+                println(text)
+                hostile.health -= playerDamage // Update hostile's health here
             } else {
                 // Hostile's turn
                 val hostileDamage = hostile.attack()
-                println("${hostile.name} dealt $hostileDamage damage to you")
+                text = "${hostile.name} dealt $hostileDamage damage to you"
+                println(text)
                 character.changeHealth(-hostileDamage)
             }
 
             // Toggle turn for the next round
             currentPlayerTurn = !currentPlayerTurn
 
-            // Introduce a delay between each round of the battle
-            TimeUnit.SECONDS.sleep(5L)
-
             // Print the current health after each round
             println("Your health: ${character.getCurrentHealth()}/${character.getMaxHealth()}, ${hostile.name}'s health: ${hostile.health}")
+
+            // Check for victory after updating health
+            if (hostile.health <= 0) {
+                text = "You defeated ${hostile.name}! Victory!"
+                println(text)
+
+                // Player gains experience
+                character.currentExperience += hostile.exp
+                println("You gained ${hostile.exp} experience!")
+
+                // 50% chance to get a random item from the loot
+                if (Random.nextBoolean() && hostile.loot.isNotEmpty()) {
+                    val randomLoot = hostile.loot.shuffled().first()
+                    character.inventory.add(randomLoot)
+                    println("You obtained ${randomLoot.name} from the loot!")
+                }
+                inBattle = false
+            }
         }
 
         if (character.isKnocked()) {
-            println("Game over! You were defeated by ${hostile.name}")
-        } else {
-            println("You defeated ${hostile.name}! Victory!")
-
-            // Player gains experience
-            character.currentExperience += hostile.exp
-            println("You gained ${hostile.exp} experience!")
-
-            // 50% chance to get a random item from the loot
-            if (Random.nextBoolean() && hostile.loot.isNotEmpty()) {
-                val randomLoot = hostile.loot.shuffled().first()
-                character.inventory.add(randomLoot)
-                println("You obtained ${randomLoot.name} from the loot!")
-            }
+            text = "Game over! You were defeated by ${hostile.name}"
+            println(text)
+            inBattle = false
         }
+
+        return text
     }
+
 
 
     private fun generateRandomGameEvent(): GameEventBase {

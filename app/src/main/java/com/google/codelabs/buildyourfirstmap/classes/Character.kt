@@ -102,6 +102,28 @@ data class PlayerCharacter(
         }
         return totalDamage
     }
+
+    override fun toString(): String {
+        val stringBuilder = StringBuilder()
+
+        stringBuilder.append("User Login: ${userLogin ?: "null"}\n")
+        stringBuilder.append("Nickname: ${nickname ?: "null"}\n")
+        stringBuilder.append("Description: ${description ?: "null"}\n")
+        stringBuilder.append("Current Experience: ${currentExperience}\n")
+        stringBuilder.append("Inventory: ${inventory ?: "null"}\n")
+        stringBuilder.append("Armor: ${armor ?: "null"}\n")
+        stringBuilder.append("Weapon: ${weapon ?: "null"}\n")
+        stringBuilder.append("Skill Points: ${skillPoints}\n")
+        stringBuilder.append("Strength: ${strength}\n")
+        stringBuilder.append("Agility: ${agility}\n")
+        stringBuilder.append("Constitution: ${constitution}\n")
+        stringBuilder.append("Health: ${health}\n")
+        stringBuilder.append("Is Knocked: ${isKnocked}\n")
+        stringBuilder.append("Level: ${level}\n")
+        stringBuilder.append("Damage: ${damage.map { it.roll() }}\n")
+
+        return stringBuilder.toString()
+    }
 }
 
 class HostileCharacter(

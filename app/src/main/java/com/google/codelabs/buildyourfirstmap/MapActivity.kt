@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -20,17 +21,26 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.codelabs.buildyourfirstmap.classes.EventManager
+import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
+import com.google.codelabs.buildyourfirstmap.classes.User
 import java.util.*
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
-
     private var fusedLocationClient: FusedLocationProviderClient? = null
     private var googleMap: GoogleMap? = null
     private var currentLatLng: LatLng? = null
+    private var currentUser: User? = null
+    private var currentCharacter: PlayerCharacter? = null
+    private var inRaid = false
+    private var em: EventManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+        currentUser = intent.getSerializableExtra("user") as User
+        currentCharacter = intent.getSerializableExtra("character") as PlayerCharacter
+        em = EventManager(currentCharacter!!)
 
         // Check for location permissions and request if not granted
         if (areLocationPermissionsGranted()) {
@@ -40,11 +50,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             requestLocationPermissions()
         }
 
-        val tempRegisterButton: Button = findViewById(R.id.inventory_button)
-        //tempRegisterButton.setOnClickListener {
-        //    val intent = Intent(this, RegisterActivity::class.java)
-        //    startActivity(intent)
-        //}
+        val goToRaid: Button = findViewById(R.id.button_start)
+        goToRaid.setOnClickListener {
+            inRaid = !inRaid
+        }
     }
 
     private fun initMap() {
@@ -71,7 +80,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(5000)
+            .setInterval(75000)
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -99,18 +108,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun onLocationChanged(location: Location) {
         currentLatLng = LatLng(location.latitude, location.longitude)
-
-        // Проверяем коллизии с каждой зоной заражения
-        for (zone in infectionZones) {
-            if (isInCollision(currentLatLng!!, zone)) {
-                // В случае коллизии выводим сообщение в консоль
-                println("Hello world")
-                break // Если коллизия уже обнаружена, выходим из цикла
+        val eventText: TextView = findViewById(R.id.generator_text)
+        if (inRaid) {
+            eventText.text = em?.generateRandomEvent()
+            for (zone in infectionZones) {
+                if (isInCollision(currentLatLng!!, zone)) {
+                    println("Hello world")
+                    break
+                }
             }
         }
 
-        //googleMap?.clear()
-        // googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng!!, 15f))
 
         if (googleMap != null) {
             onMapReady(googleMap!!)
