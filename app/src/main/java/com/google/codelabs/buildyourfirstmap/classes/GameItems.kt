@@ -1,5 +1,8 @@
 package com.google.codelabs.buildyourfirstmap.classes
-open class GameItem(val name: String, val description: String, val dangerLevel: EventLevel)
+
+import java.io.Serializable
+
+open class GameItem(val name: String, val description: String, val dangerLevel: EventLevel) : Serializable
 
 class GameItemHeal(name: String, description: String, dangerLevel: EventLevel, val diceList: List<Dice>) : GameItem(name, description, dangerLevel) {
 

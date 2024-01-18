@@ -1,7 +1,5 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 enum class EventLevel {
@@ -49,6 +47,11 @@ class EventManager(private val character: PlayerCharacter){
     var inBattle = false
     var currentEnemy: HostileCharacter? = null
     var currentPlayerTurn = false
+    var locationLevel: EventLevel = EventLevel.NEUTRAL // Значение по умолчанию
+
+    fun updateLocationLevel(newLevel: EventLevel) {
+        locationLevel = newLevel
+    }
     fun generateRandomEvent() : String {
         if (inBattle) {
             currentEnemy?.let { return turnBattle(it) }
@@ -166,15 +169,21 @@ class EventManager(private val character: PlayerCharacter){
     private fun generateRandomGameEvent(): GameEventBase {
         val activityList = listOf(
             GameEventBase(GameEventBase.EventType.NEUTRAL, EventLevel.SAFE, "Walk"),
+            GameEventBase(GameEventBase.EventType.NEUTRAL, EventLevel.NEUTRAL, "Walk"),
             GameEventBase(GameEventBase.EventType.POSITIVE, EventLevel.SAFE, "Found something!"),
             GameEventBase(GameEventBase.EventType.POSITIVE, EventLevel.SAFE, "Trader"),
-            GameEventBase(GameEventBase.EventType.NEGATIVE, EventLevel.SAFE, "Fight!")
+            GameEventBase(GameEventBase.EventType.NEGATIVE, EventLevel.NEUTRAL, "Fight!"),
+            GameEventBase(GameEventBase.EventType.NEGATIVE, EventLevel.DANGER, "Fight!"),
+            GameEventBase(GameEventBase.EventType.NEGATIVE, EventLevel.HARDCORE, "Fight!")
         )
-        val randomIndex = (0 until activityList.size).random()
+
+        val filteredActivityList = activityList.filter { it.eventLevel == locationLevel }
+
+        val randomIndex = (0 until filteredActivityList.size).random()
         val randomEvent = GameEventBase(
-            activityList[randomIndex].eventType,
-            activityList[randomIndex].eventLevel,
-            activityList[randomIndex].eventText
+            filteredActivityList[randomIndex].eventType,
+            filteredActivityList[randomIndex].eventLevel,
+            filteredActivityList[randomIndex].eventText
         )
 
         // generate content for the event

@@ -37,15 +37,21 @@
           android:name="com.google.android.geo.API_KEY"
           android:value="${GOOGLE_MAPS_API_KEY}" />
         <activity
-            android:name=".RegisterActivity">
+            android:name="com.google.codelabs.buildyourfirstmap.RegisterActivity">
         </activity>
         <activity
-            android:name=".MapActivity">
+            android:name="com.google.codelabs.buildyourfirstmap.MapActivity">
         </activity>
-        <activity android:name=".CreateCharacterActivity">
+        <activity
+            android:name="com.google.codelabs.buildyourfirstmap.StatsActivity">
+        </activity>
+        <activity
+            android:name="com.google.codelabs.buildyourfirstmap.InventoryActivity">
+        </activity>
+        <activity android:name="com.google.codelabs.buildyourfirstmap.CreateCharacterActivity">
             <!-- Add any additional configuration you may need -->
         </activity>
-  <activity android:name=".MainActivity"
+  <activity android:name="com.google.codelabs.buildyourfirstmap.MainActivity"
       android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />

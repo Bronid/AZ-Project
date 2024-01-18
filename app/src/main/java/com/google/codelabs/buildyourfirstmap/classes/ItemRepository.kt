@@ -2,7 +2,15 @@ package com.google.codelabs.buildyourfirstmap.classes
 
 object HostileRepository {
     private val allHostiles: List<HostileCharacter> = listOf(
-        HostileCharacter("Rat", 4, "Rat is going to kill you!", listOf(Dice(Dice.DiceType.D4)), EventLevel.SAFE, 5, listOf(GameItem("Rat's head", "The head of dead rat", EventLevel.SAFE)))
+        // Hostile for SAFE level
+        HostileCharacter("Rat", 3, "Rat is going to kill you!", listOf(Dice(Dice.DiceType.D4)), EventLevel.SAFE, 5, listOf(GameItem("Rat's head", "The head of dead rat", EventLevel.SAFE))),
+        HostileCharacter("Toxic Slime", 6, "A toxic slime is oozing towards you!", listOf(Dice(Dice.DiceType.D6)), EventLevel.NEUTRAL, 8, listOf(GameItem("Toxic Slime Residue", "Residue from a toxic slime", EventLevel.NEUTRAL))),
+
+        // Hostile for DANGER level
+        HostileCharacter("Mutant Dog", 8, "A mutated dog is attacking!", listOf(Dice(Dice.DiceType.D6)), EventLevel.DANGER, 10, listOf(GameItem("Mutant Dog's Fang", "Sharp fang from a mutated dog", EventLevel.DANGER))),
+
+        // Hostile for HARDCORE level
+        HostileCharacter("Giant Spider", 12, "A giant mutated spider is lurking!", listOf(Dice(Dice.DiceType.D8)), EventLevel.HARDCORE, 15, listOf(GameItem("Giant Spider's Silk", "Tough silk from a giant mutated spider", EventLevel.HARDCORE)))
     )
 
     fun getRandomHostileByEventLevel(eventLevel: EventLevel): HostileCharacter? {

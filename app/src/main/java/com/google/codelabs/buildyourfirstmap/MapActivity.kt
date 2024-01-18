@@ -1,6 +1,7 @@
 package com.google.codelabs.buildyourfirstmap
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -21,6 +22,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.EventManager
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
@@ -34,6 +36,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var currentCharacter: PlayerCharacter? = null
     private var inRaid = false
     private var em: EventManager? = null
+    private var currentZoneLevel: EventLevel = EventLevel.NEUTRAL // Инициализация значением по умолчанию
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,9 +54,32 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val goToRaid: Button = findViewById(R.id.button_start)
+        val statsButton: Button = findViewById(R.id.stats_button)
+        val inventoryButton: Button = findViewById(R.id.inventory_button)
         goToRaid.setOnClickListener {
             inRaid = !inRaid
         }
+        statsButton.setOnClickListener {
+            val intent = Intent(this@MapActivity, StatsActivity::class.java)
+            intent.putExtra("playerCharacter", currentCharacter)
+            startActivity(intent)
+        }
+        inventoryButton.setOnClickListener {
+            val intent = Intent(this@MapActivity, InventoryActivity::class.java)
+            intent.putExtra("playerCharacter", currentCharacter)
+            startActivity(intent)
+        }
+    }
+    private fun updateZoneLocation() {
+        for (zone in infectionZones) {
+            if (isInCollision(currentLatLng!!, zone)) {
+                currentZoneLevel = zone.tag as EventLevel
+                em?.updateLocationLevel(currentZoneLevel)
+                return
+            }
+        }
+        currentZoneLevel = EventLevel.NEUTRAL
+        em?.updateLocationLevel(currentZoneLevel)
     }
 
     private fun initMap() {
@@ -109,14 +135,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun onLocationChanged(location: Location) {
         currentLatLng = LatLng(location.latitude, location.longitude)
         val eventText: TextView = findViewById(R.id.generator_text)
-        if (inRaid) {
+
+        if (inRaid && currentCharacter?.isKnocked() == false) {
+            updateZoneLocation()
             eventText.text = em?.generateRandomEvent()
-            for (zone in infectionZones) {
-                if (isInCollision(currentLatLng!!, zone)) {
-                    println("Hello world")
-                    break
-                }
-            }
         }
 
 
@@ -156,7 +178,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 initMap()
             } else {
-                // Handle the case where permissions are not granted
+                // TODO: Handle the case where permissions are not granted
             }
         }
     }
@@ -168,23 +190,44 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private val infectionZones = mutableListOf<Circle>()
 
     override fun onMapReady(p0: GoogleMap) {
-        // Генерируем случайные зоны заражения (круги) на карте
         if (currentLatLng != null) {
             for (i in 1..5) { // Создаем 5 зон
                 val randomLatLng = generateRandomLatLng(currentLatLng!!)
-                val radius = 100.0 // Радиус круга в метрах (пример)
+                val radius = 100.0 // Радиус круга в метрах
+                val level = generateRandomEventLevel() // Генерация уровня для зоны
+
                 val circleOptions = CircleOptions()
                     .center(randomLatLng)
                     .radius(radius)
                     .strokeWidth(2f)
-                    .strokeColor(Color.RED)
-                    .fillColor(Color.argb(70, 255, 0, 0))
+                    .strokeColor(getColorForLevel(level)) // Цвет границы зависит от уровня
+                    .fillColor(Color.TRANSPARENT)
 
+                // Добавляем тег с уровнем к кругу
                 val circle = googleMap?.addCircle(circleOptions)
+                circle?.tag = level
+
                 circle?.let { infectionZones.add(it) }
             }
         }
     }
+
+    private fun generateRandomEventLevel(): EventLevel {
+        val random = Random()
+        val levels = listOf(EventLevel.SAFE, EventLevel.DANGER, EventLevel.HARDCORE)
+        return levels[random.nextInt(levels.size)]
+    }
+
+    private fun getColorForLevel(level: EventLevel): Int {
+        return when (level) {
+            EventLevel.SAFE -> Color.GREEN
+            EventLevel.DANGER -> Color.YELLOW
+            EventLevel.HARDCORE -> Color.RED
+            else -> Color.BLACK // Default color
+        }
+    }
+
+
 
     private fun generateRandomLatLng(currentLatLng: LatLng): LatLng {
         val random = Random()

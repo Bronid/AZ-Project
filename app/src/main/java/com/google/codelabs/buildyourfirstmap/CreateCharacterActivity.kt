@@ -103,9 +103,6 @@ class CreateCharacterActivity : AppCompatActivity() {
         }
 
         override fun onPostExecute(result: PlayerCharacter) {
-            // Perform any further operations with the character if needed
-            // ...
-
             finish()
         }
     }

@@ -43,8 +43,8 @@ data class PlayerCharacter(
 ) : Serializable {
     private var health = getMaxHealth()
     private var isKnocked = false
-    private var level = LevelManager.calculateLevel(currentExperience)
-    private var damage: Stack<Dice> = Stack()
+    var level = LevelManager.calculateLevel(currentExperience)
+    var damage: Stack<Dice> = Stack()
 
     init {
         health = getMaxHealth()
