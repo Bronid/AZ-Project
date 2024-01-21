@@ -38,9 +38,17 @@ dependencies {
     implementation 'org.mongodb:mongo-java-driver:3.12.9'
 
 
+
     // Dependency to include Maps SDK for Android
     implementation 'com.google.android.gms:play-services-maps:18.0.2'
     implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation 'androidx.cardview:cardview:1.0.0'giy
+    implementation 'com.google.android.material:material:1.4.0'
+
+
+
+
+
 
     testImplementation 'junit:junit:4.13.2'
 }
