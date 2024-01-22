@@ -4,73 +4,157 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="16dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingTop="16dp"
+    android:background="@drawable/bg"
     tools:context=".CreateCharacterActivity">
 
-    <TextView
-        android:id="@+id/textViewPointsRemaining"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:text="@string/points_remaining"
-        android:textSize="18sp"
-        android:layout_marginBottom="16dp"
-        android:textColor="@android:color/black"/>
 
-    <EditText
-        android:id="@+id/editTextNickname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/nickname"
-        android:layout_below="@+id/textViewPointsRemaining"
-        android:layout_marginTop="16dp"/>
+    <LinearLayout
+        android:layout_width="395dp"
+        android:layout_height="590dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="73dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <EditText
-        android:id="@+id/editTextDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/description"
-        android:layout_below="@+id/editTextNickname"
-        android:layout_marginTop="8dp"/>
+        <TextView
+            android:id="@+id/textViewPointsRemaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:text="@string/points_remaining"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            android:textSize="30sp"/>
 
-    <SeekBar
-        android:id="@+id/seekBarStrength"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editTextDescription"
-        android:layout_marginTop="16dp"
-        android:max="5"
-        android:thumb="@android:color/darker_gray"
-        android:progress="0"/>
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-24dp"
+            app:cardCornerRadius="28dp">
 
-    <SeekBar
-        android:id="@+id/seekBarAgility"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/seekBarStrength"
-        android:layout_marginTop="8dp"
-        android:max="5"
-        android:thumb="@android:color/darker_gray"
-        android:progress="0"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/Primary"
+                android:orientation="vertical"
+                android:padding="28dp">
 
-    <SeekBar
-        android:id="@+id/seekBarConstitution"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/seekBarAgility"
-        android:layout_marginTop="8dp"
-        android:max="5"
-        android:thumb="@android:color/darker_gray"
-        android:progress="0"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Basic"
+                    android:textColor="#fff"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/buttonCreateCharacter"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/seekBarConstitution"
-        android:layout_marginTop="16dp"
-        android:text="@string/create_character"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Type inforamtion about your character"
+                    android:textColor="#fff" />
+
+                <EditText
+                    android:id="@+id/editTextNickname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textViewPointsRemaining"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:hint="@string/nickname"
+                    android:textColorHint="#fff" />
+
+                <EditText
+                    android:id="@+id/editTextDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/editTextNickname"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:hint="@string/description"
+                    android:textColorHint="#fff" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            app:cardCornerRadius="28dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/Primary"
+                android:orientation="vertical"
+                android:padding="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Skills"
+                    android:textColor="#fff"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Choose your skills"
+                    android:textColor="#fff" />
+
+                <SeekBar
+                    android:id="@+id/seekBarStrength"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/editTextDescription"
+                    android:layout_marginTop="16dp"
+                    android:max="5"
+                    android:progress="0"
+                    android:thumb="@android:color/holo_orange_light" />
+
+                <SeekBar
+                    android:id="@+id/seekBarAgility"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/seekBarStrength"
+                    android:layout_marginTop="8dp"
+                    android:max="5"
+                    android:progress="0"
+                    android:thumb="@android:color/holo_orange_light" />
+
+                <SeekBar
+                    android:id="@+id/seekBarConstitution"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/seekBarAgility"
+                    android:layout_marginTop="8dp"
+                    android:max="5"
+                    android:progress="0"
+                    android:thumb="@android:color/holo_orange_light" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/buttonCreateCharacter"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:text="@string/create_character"
+            android:backgroundTint="#FFA500"/>
+
+    </LinearLayout>
+
 </RelativeLayout>
