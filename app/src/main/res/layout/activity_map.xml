@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MapActivity">
 
     <fragment
@@ -10,53 +11,90 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <Button
-        android:id="@+id/button_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerInParent="true"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"
-        android:text="@string/button_start" />
-
-    <Button
-        android:id="@+id/stats_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/button_start"
-        android:layout_alignBaseline="@id/button_start"
-        android:layout_marginRight="16dp"
-        android:text="Stats" />
-
-    <Button
-        android:id="@+id/inventory_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/button_start"
-        android:layout_alignBaseline="@id/button_start"
-        android:layout_marginLeft="16dp"
-        android:text="Inventory" />
-
     <!-- Add TextView for displaying generated text -->
-    <TextView
-        android:id="@+id/generator_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="Generated Text"
-        android:textSize="18sp" />
-
-    <!-- Add ProgressBar for simulating loading -->
-    <ProgressBar
-        android:id="@+id/loading_progress"
-        style="?android:attr/progressBarStyleHorizontal"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/generator_text"
-        android:layout_marginTop="8dp"
-        android:progress="0" />
+        android:layout_alignParentTop="true"
+        app:cardCornerRadius="28dp"
+        android:layout_marginTop="-24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/Primary"
+            android:orientation="vertical"
+            android:padding="28dp"
+            android:gravity="center_vertical"> <!-- Устанавливаем gravity для выравнивания по вертикали -->
+
+            <TextView
+                android:id="@+id/generator_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:text="Generated Text"
+                android:textColor="#ffff"
+                android:textSize="18sp" />
+
+            <ProgressBar
+                android:id="@+id/loading_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:progress="0"
+                android:paddingTop="10dp"
+                android:progressBackgroundTint="#FFFFFF" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:cardCornerRadius="28dp"
+        android:layout_marginBottom="-24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/Primary"
+            android:orientation="horizontal"
+            android:padding="28dp">
+
+            <ImageButton
+                android:id="@+id/inventory_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/user"
+                android:backgroundTint="#FFA500"
+                android:text="Inventory" />
+
+            <ImageButton
+                android:id="@+id/button_start"
+                android:layout_width="10dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_margin="20dp"
+                android:src="@drawable/play"
+                android:backgroundTint="#FFA500"
+                android:text="@string/button_start" />
+
+            <ImageButton
+                android:id="@+id/stats_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/backpack"
+                android:backgroundTint="#FFA500" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
 </RelativeLayout>
 
