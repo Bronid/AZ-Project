@@ -36,7 +36,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var currentCharacter: PlayerCharacter? = null
     private var inRaid = false
     private var em: EventManager? = null
-    private var currentZoneLevel: EventLevel = EventLevel.NEUTRAL // Инициализация значением по умолчанию
+    private var currentZoneLevel: EventLevel = EventLevel.NEUTRAL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -191,19 +191,20 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(p0: GoogleMap) {
         if (currentLatLng != null) {
-            for (i in 1..5) { // Создаем 5 зон
+            for (i in 1..5) {
                 val randomLatLng = generateRandomLatLng(currentLatLng!!)
-                val radius = 100.0 // Радиус круга в метрах
-                val level = generateRandomEventLevel() // Генерация уровня для зоны
+                val radius = 100.0
+                val level = generateRandomEventLevel()
 
                 val circleOptions = CircleOptions()
                     .center(randomLatLng)
                     .radius(radius)
                     .strokeWidth(2f)
-                    .strokeColor(getColorForLevel(level)) // Цвет границы зависит от уровня
-                    .fillColor(Color.TRANSPARENT)
+                    .strokeColor(getColorForLevel(level))
 
-                // Добавляем тег с уровнем к кругу
+                val fillColor = getColorForLevel(level) and 0x00FFFFFF or (0x40 shl 24)
+                circleOptions.fillColor(fillColor)
+
                 val circle = googleMap?.addCircle(circleOptions)
                 circle?.tag = level
 
