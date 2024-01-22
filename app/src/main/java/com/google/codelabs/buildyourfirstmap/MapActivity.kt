@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -54,8 +55,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val goToRaid: Button = findViewById(R.id.button_start)
-        val statsButton: Button = findViewById(R.id.stats_button)
-        val inventoryButton: Button = findViewById(R.id.inventory_button)
+        val statsButton: ImageButton = findViewById(R.id.stats_button)
+        val inventoryButton: ImageButton = findViewById(R.id.inventory_button)
         goToRaid.setOnClickListener {
             inRaid = !inRaid
         }

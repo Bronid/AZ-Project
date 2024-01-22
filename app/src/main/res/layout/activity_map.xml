@@ -56,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:cardCornerRadius="28dp"
+        app:cardCornerRadius="10dp"
         android:layout_marginBottom="-24dp">
 
         <LinearLayout
@@ -67,31 +67,33 @@
             android:padding="28dp">
 
             <ImageButton
-                android:id="@+id/inventory_button"
+                android:id="@+id/stats_button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="60dp"
+                android:layout_weight="0.5"
                 android:src="@drawable/user"
-                android:backgroundTint="#FFA500"
-                android:text="Inventory" />
+                android:backgroundTint="#FFA500" />
 
-            <ImageButton
+            <Button
                 android:id="@+id/button_start"
-                android:layout_width="10dp"
-                android:layout_height="100dp"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
                 android:layout_weight="1"
-                android:layout_margin="20dp"
-                android:src="@drawable/play"
+                android:layout_margin="5dp"
                 android:backgroundTint="#FFA500"
+                android:textColor="#000"
+                android:textSize="36sp"
+                android:textStyle="bold"
                 android:text="@string/button_start" />
 
             <ImageButton
-                android:id="@+id/stats_button"
+                android:id="@+id/inventory_button"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="60dp"
+                android:layout_weight="0.5"
                 android:src="@drawable/backpack"
-                android:backgroundTint="#FFA500" />
+                android:backgroundTint="#FFA500"
+                android:text="Inventory" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
