@@ -15,6 +15,8 @@ class InventoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inventory)
 
+        supportActionBar?.hide()
+
         val playerCharacter: PlayerCharacter? = intent.getSerializableExtra("playerCharacter") as? PlayerCharacter
         val playerInventory: List<GameItem> =  playerCharacter?.inventory ?: emptyList()
         val backButton: Button = findViewById(R.id.backButton)

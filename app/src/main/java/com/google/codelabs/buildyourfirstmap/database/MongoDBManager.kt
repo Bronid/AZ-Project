@@ -15,7 +15,7 @@ import org.bson.Document
 
 class MongoDBManager {
     private val DATABASE_NAME = "ArthunterDB"
-    private val CONNECTION_STRING = "mongodb://192.168.100.7:27017"
+    private val CONNECTION_STRING = "mongodb://192.168.0.145:27017"
 
     private val mongoClient: MongoClient
     private val database: MongoDatabase

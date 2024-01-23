@@ -46,6 +46,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         currentCharacter = intent.getSerializableExtra("character") as PlayerCharacter
         em = EventManager(currentCharacter!!)
 
+        supportActionBar?.hide()
+
         // Check for location permissions and request if not granted
         if (areLocationPermissionsGranted()) {
             initMap()

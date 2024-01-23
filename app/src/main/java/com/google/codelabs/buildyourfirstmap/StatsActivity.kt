@@ -12,6 +12,8 @@ class StatsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
+        supportActionBar?.hide()
+
         // Assuming you have a TextView in your layout with the id "statsTextView"
         val statsTextView: TextView = findViewById(R.id.statsTextView)
         val backButton: Button = findViewById(R.id.backButton)

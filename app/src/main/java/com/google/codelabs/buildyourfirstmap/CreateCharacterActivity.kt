@@ -28,6 +28,8 @@ class CreateCharacterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_character)
         val user = intent.getSerializableExtra("user") as User
 
+        supportActionBar?.hide()
+
         nicknameEditText = findViewById(R.id.editTextNickname)
         descriptionEditText = findViewById(R.id.editTextDescription)
         strengthSeekBar = findViewById(R.id.seekBarStrength)

@@ -16,6 +16,8 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.register)
 
+        supportActionBar?.hide()
+
         val userLogin: EditText = findViewById(R.id.editTextLogin)
         val userPassword: EditText = findViewById(R.id.editTextPassword)
         val userRepeatPassword: EditText = findViewById(R.id.editTextRepeatPassword)
