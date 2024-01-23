@@ -20,3 +20,11 @@ In development
 ## Developers
 - [Radusya](https://github.com/Radusya)
 - [Bronid](https://github.com/Bronid)
+
+## Screenshots
+<p align="left">
+<img src="https://i.ibb.co/RD2QBSB/login-page.png" alt="login_page" width="200" height="400">
+<img src="https://i.ibb.co/jfwhpqj/main-page.png" alt="main_page" width="200" height="400">
+</p>
+
+
