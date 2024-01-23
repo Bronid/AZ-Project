@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -60,7 +61,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val statsButton: ImageButton = findViewById(R.id.stats_button)
         val inventoryButton: ImageButton = findViewById(R.id.inventory_button)
         goToRaid.setOnClickListener {
-            inRaid = !inRaid
+            if(currentCharacter?.isKnocked() == false && em?.inBattle == false){
+                inRaid = !inRaid
+                val colorResId = if (inRaid) R.color.rog else R.color.orange
+                goToRaid.setBackgroundColor(ContextCompat.getColor(this, colorResId))
+            } else if (em?.inBattle == true) {
+                Toast.makeText(this, "You can't run away from battle", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "woops", Toast.LENGTH_LONG).show()
+            }
         }
         statsButton.setOnClickListener {
             val intent = Intent(this@MapActivity, StatsActivity::class.java)
@@ -142,6 +151,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (inRaid && currentCharacter?.isKnocked() == false) {
             updateZoneLocation()
             eventText.text = em?.generateRandomEvent()
+        } else {
+            eventText.text = getString(R.string.NotRaid)
         }
 
 
