@@ -14,10 +14,10 @@
 
 
     <LinearLayout
-        android:layout_width="395dp"
-        android:layout_height="590dp"
+        android:layout_width="376dp"
+        android:layout_height="662dp"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="73dp"
+        android:layout_marginTop="17dp"
         android:gravity="center_vertical"
         android:orientation="vertical"
         android:padding="16dp">
@@ -31,8 +31,8 @@
             android:layout_marginBottom="16dp"
             android:text="@string/points_remaining"
             android:textColor="#fff"
-            android:textStyle="bold"
-            android:textSize="30sp"/>
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -69,6 +69,7 @@
                     android:layout_marginTop="16dp"
                     android:backgroundTint="#FFFFFF"
                     android:hint="@string/nickname"
+                    android:textColor="#ffff"
                     android:textColorHint="#fff" />
 
                 <EditText
@@ -79,6 +80,7 @@
                     android:layout_marginTop="8dp"
                     android:backgroundTint="#FFFFFF"
                     android:hint="@string/description"
+                    android:textColor="#ffff"
                     android:textColorHint="#fff" />
 
             </LinearLayout>
@@ -98,6 +100,7 @@
                 android:orientation="vertical"
                 android:padding="28dp">
 
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -112,34 +115,69 @@
                     android:text="Choose your skills"
                     android:textColor="#fff" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Strength"
+                    android:textAlignment="center"
+                    android:textColor="#fff"
+                    android:textSize="18dp" />
+
                 <SeekBar
                     android:id="@+id/seekBarStrength"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/editTextDescription"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:max="5"
+                    android:progressTint="#FFA500"
                     android:progress="0"
-                    android:thumb="@android:color/holo_orange_light" />
+                    android:progressBackgroundTint="#FFFFFF"
+                    android:thumb="@android:color/holo_orange_light"
+                    android:thumbTint="#FFBB33" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Agility"
+                    android:textAlignment="center"
+                    android:textColor="#fff"
+                    android:textSize="18dp" />
 
                 <SeekBar
                     android:id="@+id/seekBarAgility"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/seekBarStrength"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:max="5"
+                    android:progressTint="#FFA500"
                     android:progress="0"
+                    android:progressBackgroundTint="#FFFFFF"
                     android:thumb="@android:color/holo_orange_light" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Constitution"
+                    android:textAlignment="center"
+                    android:textColor="#fff"
+                    android:textSize="18dp" />
 
                 <SeekBar
                     android:id="@+id/seekBarConstitution"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/seekBarAgility"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
                     android:max="5"
+                    android:progressTint="#FFA500"
                     android:progress="0"
+                    android:progressBackgroundTint="#FFFFFF"
                     android:thumb="@android:color/holo_orange_light" />
 
             </LinearLayout>
@@ -152,8 +190,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:text="@string/create_character"
-            android:backgroundTint="#FFA500"/>
+            android:backgroundTint="#FFA500"
+            android:text="@string/create_character" />
+
 
     </LinearLayout>
 
