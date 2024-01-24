@@ -1,5 +1,7 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.io.Serializable
 import java.util.Stack
 
@@ -34,6 +36,7 @@ data class PlayerCharacter(
     var description: String,
     var currentExperience: Int,
     var currentHealth: Int,
+    var isKnocked: Boolean,
     var inventory: MutableList<GameItem>,
     var armor: GameItemArmor?,
     var weapon: GameItemWeapon?,
@@ -42,7 +45,6 @@ data class PlayerCharacter(
     var agility: Int, // повышает защиту
     var constitution: Int, // здоровье
 ) : Serializable {
-    private var isKnocked = false
     var level = LevelManager.calculateLevel(currentExperience)
     var damage: Stack<Dice> = Stack()
 
@@ -67,14 +69,11 @@ data class PlayerCharacter(
         level = LevelManager.calculateLevel(currentExperience)
     }
 
-    fun isKnocked(): Boolean {
-        return isKnocked
-    }
-
     fun changeHealth(num: Int) {
         if (currentHealth + num <= 0){
             currentHealth = 0
             isKnocked = true
+            inventory.clear()
             return
         }
         else if(currentHealth + num > getMaxHealth()){
@@ -96,6 +95,28 @@ data class PlayerCharacter(
             totalDamage += dice.roll()
         }
         return totalDamage
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun damageToString(): String {
+        val diceCountMap = mutableMapOf<Dice.DiceType, Int>()
+
+        // Подсчет количества каждого типа кубика
+        damage.forEach { dice ->
+            diceCountMap[dice.type] = diceCountMap.getOrDefault(dice.type, 0) + 1
+        }
+
+        // Формирование строки на основе подсчета
+        val resultStringBuilder = StringBuilder()
+
+        diceCountMap.forEach { (diceType, count) ->
+            if (resultStringBuilder.isNotEmpty()) {
+                resultStringBuilder.append("+")
+            }
+            resultStringBuilder.append("$count${diceType.toString()}")
+        }
+
+        return resultStringBuilder.toString()
     }
 
     override fun toString(): String {

@@ -7,6 +7,8 @@ import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
+import com.google.codelabs.buildyourfirstmap.classes.GameItemArmor
+import com.google.codelabs.buildyourfirstmap.classes.GameItemWeapon
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 
 class InventoryActivity : AppCompatActivity(), InventoryAdapter.InventoryAdapterCallback {
@@ -38,6 +40,21 @@ class InventoryActivity : AppCompatActivity(), InventoryAdapter.InventoryAdapter
         val resultIntent = Intent()
         resultIntent.putExtra("healAmount", healAmount)
         resultIntent.putExtra("removedItem", removedItem)
+        setResult(Activity.RESULT_OK, resultIntent)
+        finish()
+    }
+    override fun onWeaponEquipped(weapon: GameItemWeapon?) {
+        // Вызывается при экипировке оружия в адаптере
+        val resultIntent = Intent()
+        resultIntent.putExtra("equippedWeapon", weapon)
+        setResult(Activity.RESULT_OK, resultIntent)
+        finish()
+    }
+
+    override fun onArmorEquipped(armor: GameItemArmor?) {
+        // Вызывается при экипировке брони в адаптере
+        val resultIntent = Intent()
+        resultIntent.putExtra("equippedArmor", armor)
         setResult(Activity.RESULT_OK, resultIntent)
         finish()
     }

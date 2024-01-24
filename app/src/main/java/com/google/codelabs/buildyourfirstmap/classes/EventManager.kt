@@ -77,6 +77,18 @@ class EventManager(private val character: PlayerCharacter){
             character.inventory.add(item)
             return text
         }
+        if (item is GameItemWeapon) {
+            val text = "You found a item: ${item.name}"
+            println(text)
+            character.inventory.add(item)
+            return text
+        }
+        if (item is GameItemArmor) {
+            val text = "You found a item: ${item.name}"
+            println(text)
+            character.inventory.add(item)
+            return text
+        }
         return ""
         // Handle other positive events if needed
     }
@@ -115,7 +127,7 @@ class EventManager(private val character: PlayerCharacter){
     private fun turnBattle(hostile: HostileCharacter): String {
         var text = ""
 
-        if (!character.isKnocked() && hostile.health > 0) {
+        if (!character.isKnocked && hostile.health > 0) {
             if (currentPlayerTurn) {
                 // Player's turn
                 val playerDamage = character.attack()
@@ -155,7 +167,7 @@ class EventManager(private val character: PlayerCharacter){
             }
         }
 
-        if (character.isKnocked()) {
+        if (character.isKnocked) {
             text = "Game over! You were defeated by ${hostile.name}"
             println(text)
             inBattle = false

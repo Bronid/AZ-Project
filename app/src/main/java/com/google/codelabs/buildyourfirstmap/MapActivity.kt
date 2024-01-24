@@ -66,7 +66,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val statsButton: ImageButton = findViewById(R.id.stats_button)
         val inventoryButton: ImageButton = findViewById(R.id.inventory_button)
         goToRaid.setOnClickListener {
-            if(currentCharacter?.isKnocked() == false && em?.inBattle == false){
+            if(currentCharacter?.isKnocked == false && em?.inBattle == false){
                 inRaid = !inRaid
                 val colorResId = if (inRaid) R.color.rog else R.color.orange
                 goToRaid.setBackgroundColor(ContextCompat.getColor(this, colorResId))
@@ -178,14 +178,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         currentLatLng = LatLng(location.latitude, location.longitude)
         val eventText: TextView = findViewById(R.id.generator_text)
 
-        if (inRaid && currentCharacter?.isKnocked() == false) {
+        if (inRaid && currentCharacter?.isKnocked == false) {
             updateZoneLocation()
             eventText.text = em?.generateRandomEvent()
-            val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
-            updateCharacterAsyncTask.execute(currentCharacter!!)
-        } else {
-            eventText.text = getString(R.string.NotRaid)
         }
+        else {
+            if (currentCharacter?.isKnocked == true) {
+                currentCharacter?.changeHealth(1)
+                eventText.text = getString(R.string.healing)
+                if (currentCharacter?.currentHealth == currentCharacter?.getMaxHealth()) {
+                    currentCharacter!!.isKnocked = false
+                }
+            }
+            else {
+                eventText.text = getString(R.string.NotRaid)
+            }
+        }
+        val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
+        updateCharacterAsyncTask.execute(currentCharacter!!)
 
 
         if (googleMap != null) {

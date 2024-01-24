@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
+import com.google.codelabs.buildyourfirstmap.classes.GameItemArmor
 import com.google.codelabs.buildyourfirstmap.classes.GameItemHeal
+import com.google.codelabs.buildyourfirstmap.classes.GameItemWeapon
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 
 class InventoryAdapter(
@@ -22,6 +24,8 @@ class InventoryAdapter(
 
     interface InventoryAdapterCallback {
         fun onItemUsed(healAmount: Int, removedItem: GameItem?)
+        fun onWeaponEquipped(weapon: GameItemWeapon?)
+        fun onArmorEquipped(armor: GameItemArmor?)
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -33,21 +37,27 @@ class InventoryAdapter(
 
         itemNameTextView.text = item?.name
 
-        // Добавьте обработчик клика на элемент списка
         itemView.setOnClickListener {
-            if (item is GameItemHeal) {
-                val healAmount = item.heal()
-                playerCharacter?.changeHealth(healAmount)
-
-                // Удаление предмета из инвентаря
-                remove(item)
-                playerCharacter?.inventory?.remove(item)
-
-                // Обновление интерфейса
-                notifyDataSetChanged()
-
-                // Уведомление об использовании предмета через callback
-                callback.onItemUsed(healAmount, item)
+            when (item) {
+                is GameItemHeal -> {
+                    val healAmount = item.heal()
+                    playerCharacter?.changeHealth(healAmount)
+                    playerCharacter?.inventory?.remove(item)
+                    notifyDataSetChanged()
+                    callback.onItemUsed(healAmount, item)
+                }
+                is GameItemWeapon -> {
+                    playerCharacter?.weapon = item
+                    playerCharacter?.inventory?.remove(item)
+                    notifyDataSetChanged()
+                    callback.onWeaponEquipped(item)
+                }
+                is GameItemArmor -> {
+                    playerCharacter?.armor = item
+                    playerCharacter?.inventory?.remove(item)
+                    notifyDataSetChanged()
+                    callback.onArmorEquipped(item)
+                }
             }
         }
 

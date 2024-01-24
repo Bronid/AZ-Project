@@ -1,14 +1,17 @@
 package com.google.codelabs.buildyourfirstmap
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import kotlinx.android.synthetic.main.activity_stats.skillsStats
 
 class StatsActivity : AppCompatActivity() {
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
@@ -66,10 +69,11 @@ class StatsActivity : AppCompatActivity() {
         return stringBuilder.toString()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun buildEquipText(playerCharacter: PlayerCharacter): String {
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append("Damage: ${playerCharacter.damage.peek().type.toString()}\n")
+        stringBuilder.append("Damage: ${playerCharacter.damageToString()}\n")
         stringBuilder.append("Armor: ${playerCharacter.armor ?: "null"}\n")
         stringBuilder.append("Weapon: ${playerCharacter.weapon ?: "null"}\n")
 

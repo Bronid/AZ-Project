@@ -95,7 +95,7 @@ class CreateCharacterActivity : AppCompatActivity() {
             val agility = params[4] as Int
             val constitution = params[5] as Int
 
-            val character = PlayerCharacter(user.login, nickname, description, 0, (5 + constitution) + 2, mutableListOf(), null, null, 0, strength, agility, constitution)
+            val character = PlayerCharacter(user.login, nickname, description, 0, (5 + constitution) + 2, false, mutableListOf(), null, null, 0, strength, agility, constitution)
 
             val mongoDBManager = MongoDBManager()
             mongoDBManager.addOrUpdatePlayerCharacter(character)

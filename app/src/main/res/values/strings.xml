@@ -17,6 +17,7 @@
 <resources>
   <string name="app_name">BuildYourFirstMap</string>
   <string name="button_start">Raid</string>
+  <string name="healing">Healing after defeat</string>
   <string name="NotRaid">In shelter</string>
   <string name="nickname">Nickname</string>
   <string name="description">Description</string>

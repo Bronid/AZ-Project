@@ -28,6 +28,8 @@ object HostileRepository {
 object ItemRepository {
     private val allItems: List<GameItem> = listOf(
         GameItem("Rat's head", "The head of dead rat", EventLevel.SAFE),
+        GameItemArmor("TestArmor", "just test armor", EventLevel.SAFE, 5),
+        GameItemWeapon("TestWeapon", "just test weapon", EventLevel.SAFE, listOf(Dice(Dice.DiceType.D8), Dice(Dice.DiceType.D8))),
         GameItemHeal("Bandage", "Uses for stop bleeding", EventLevel.SAFE, listOf(Dice(Dice.DiceType.D4))),
         GameItemHeal("AI-2", "Basic medicine in the Zone", EventLevel.SAFE, listOf(Dice(Dice.DiceType.D6))),
         GameItemHeal("Army Medkit", "Army medkit", EventLevel.NEUTRAL, listOf(Dice(Dice.DiceType.D8))),

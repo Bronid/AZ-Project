@@ -53,7 +53,8 @@ class MongoDBManager {
             .append("nickname", playerCharacter.nickname)
             .append("description", playerCharacter.description)
             .append("currentExperience", playerCharacter.currentExperience)
-            .append("currentHealth", playerCharacter.currentHealth)  // Добавляем текущее здоровье
+            .append("currentHealth", playerCharacter.currentHealth)
+            .append("isKnocked", playerCharacter.isKnocked)
             .append("inventory", playerCharacter.inventory.map { item ->
                 Document()
                     .append("name", item.name)
@@ -112,6 +113,7 @@ class MongoDBManager {
                 description = playerCharacterDocument.getString("description"),
                 currentExperience = playerCharacterDocument.getInteger("currentExperience"),
                 currentHealth = playerCharacterDocument.getInteger("currentHealth"),
+                isKnocked = playerCharacterDocument.getBoolean("isKnocked"),
                 inventory = (playerCharacterDocument.get("inventory") as? List<Document>)?.map { itemDoc ->
                     when (EventLevel.valueOf(itemDoc.getString("dangerLevel"))) {
                         EventLevel.SAFE -> GameItem(
