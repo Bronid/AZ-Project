@@ -42,7 +42,7 @@ data class PlayerCharacter(
     var weapon: GameItemWeapon?,
     var skillPoints: Int,
     var strength: Int, // модификатор урона
-    var agility: Int, // повышает защиту
+    var perception: Int, // повышает обзор
     var constitution: Int, // здоровье
 ) : Serializable {
     var level = LevelManager.calculateLevel(currentExperience)
@@ -51,6 +51,10 @@ data class PlayerCharacter(
     init {
         level = LevelManager.calculateLevel(currentExperience)
         updateDamage()
+    }
+
+    fun getFov(): Float {
+        return 15 + (perception.toFloat() * 0.5F)
     }
 
     fun updateDamage(){
@@ -94,7 +98,7 @@ data class PlayerCharacter(
         for (dice in damage) {
             totalDamage += dice.roll()
         }
-        return totalDamage
+        return totalDamage + strength
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
@@ -130,7 +134,7 @@ data class PlayerCharacter(
         stringBuilder.append("Weapon: ${weapon ?: "null"}\n")
         stringBuilder.append("Skill Points: ${skillPoints}\n")
         stringBuilder.append("Strength: ${strength}\n")
-        stringBuilder.append("Agility: ${agility}\n")
+        stringBuilder.append("Perception: ${perception}\n")
         stringBuilder.append("Constitution: ${constitution}\n")
         stringBuilder.append("Health: ${currentHealth}\n")
         stringBuilder.append("Is Knocked: ${isKnocked}\n")

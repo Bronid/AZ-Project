@@ -29,6 +29,8 @@ import com.google.android.gms.maps.model.CircleOptions
 import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.EventManager
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
+import com.google.codelabs.buildyourfirstmap.classes.GameItemArmor
+import com.google.codelabs.buildyourfirstmap.classes.GameItemWeapon
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
@@ -146,22 +148,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (requestCode == INVENTORY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val healAmount = data?.getIntExtra("healAmount", 0) ?: 0
-            val removedItem = data?.getSerializableExtra("removedItem") as? GameItem
-
-            // Обновление здоровья и инвентаря в MapActivity
+            val removedHealItem = data?.getSerializableExtra("removedItem") as? GameItem
+            val equippedWeapon = data?.getSerializableExtra("equippedWeapon") as? GameItem
+            val equippedArmor = data?.getSerializableExtra("equippedArmor") as? GameItem
             currentCharacter?.changeHealth(healAmount)
 
-            if (removedItem != null) {
-                // Найдем соответствующий предмет в инвентаре по имени
-                val matchingItem = currentCharacter?.inventory?.find { it.name == removedItem.name }
-
-                // Удаляем предмет из инвентаря
+            if (removedHealItem != null) {
+                val matchingItem = currentCharacter?.inventory?.find { it.name == removedHealItem.name }
                 matchingItem?.let { currentCharacter?.inventory?.remove(it) }
-                Toast.makeText(this, "You used ${removedItem.name}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "You used ${removedHealItem.name}", Toast.LENGTH_LONG).show()
             }
 
-            // Здесь вы можете обновить интерфейс MapActivity с учетом изменений в персонаже
+            if (equippedWeapon != null) {
+                val matchingItem = currentCharacter?.inventory?.find { it.name == equippedWeapon.name }
+                matchingItem?.let { currentCharacter?.inventory?.remove(it) }
+                currentCharacter?.weapon?.let { currentCharacter?.inventory?.add(it) }
+                currentCharacter?.weapon = matchingItem as GameItemWeapon?
+                currentCharacter?.updateDamage()
+                Toast.makeText(this, "You equipped ${equippedWeapon.name}", Toast.LENGTH_LONG).show()
+            }
+
+            if (equippedArmor != null) {
+                val matchingItem = currentCharacter?.inventory?.find { it.name == equippedArmor.name }
+                matchingItem?.let { currentCharacter?.inventory?.remove(it) }
+                currentCharacter?.armor?.let { currentCharacter?.inventory?.add(it) }
+                currentCharacter?.armor = matchingItem as GameItemArmor?
+                Toast.makeText(this, "You equipped ${equippedArmor.name}", Toast.LENGTH_LONG).show()
+            }
+
         }
+
     }
 
 
