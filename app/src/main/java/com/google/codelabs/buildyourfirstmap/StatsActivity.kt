@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
+import kotlinx.android.synthetic.main.activity_stats.skillsStats
 
 class StatsActivity : AppCompatActivity() {
 
@@ -15,7 +16,9 @@ class StatsActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         // Assuming you have a TextView in your layout with the id "statsTextView"
-        val statsTextView: TextView = findViewById(R.id.statsTextView)
+        val basicTextView: TextView = findViewById(R.id.basicStats)
+        val SkillsTextView: TextView = findViewById(R.id.skillsStats)
+        val EquipTextView: TextView = findViewById(R.id.equipStats)
         val backButton: Button = findViewById(R.id.backButton)
 
         // Set up back button click listener
@@ -26,8 +29,14 @@ class StatsActivity : AppCompatActivity() {
         val playerCharacter: PlayerCharacter? = intent.getSerializableExtra("playerCharacter") as? PlayerCharacter
 
         playerCharacter?.let {
-            val statsText = buildStatsText(it)
-            statsTextView.text = statsText
+            val basicText = buildStatsText(it)
+            val skillsText = buildSkillsText(it)
+            val equipText = buildEquipText(it)
+
+            basicTextView.text = basicText
+            SkillsTextView.text = skillsText
+            EquipTextView.text = equipText
+
         }
 
 
@@ -48,22 +57,33 @@ class StatsActivity : AppCompatActivity() {
     private fun buildStatsText(playerCharacter: PlayerCharacter): String {
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append("User Login: ${playerCharacter.userLogin ?: "null"}\n")
         stringBuilder.append("Nickname: ${playerCharacter.nickname ?: "null"}\n")
-        stringBuilder.append("Description: ${playerCharacter.description ?: "null"}\n")
+        stringBuilder.append("Health: ${playerCharacter.currentHealth}\n")
         stringBuilder.append("Current Experience: ${playerCharacter.currentExperience}\n")
-        stringBuilder.append("Inventory: ${playerCharacter.inventory ?: "null"}\n")
+        stringBuilder.append("Level: ${playerCharacter.level}\n")
+
+
+        return stringBuilder.toString()
+    }
+
+    private fun buildEquipText(playerCharacter: PlayerCharacter): String {
+        val stringBuilder = StringBuilder()
+
+        stringBuilder.append("Damage: ${playerCharacter.damage.peek().type.toString()}\n")
         stringBuilder.append("Armor: ${playerCharacter.armor ?: "null"}\n")
         stringBuilder.append("Weapon: ${playerCharacter.weapon ?: "null"}\n")
-        stringBuilder.append("Skill Points: ${playerCharacter.skillPoints}\n")
+
+        return stringBuilder.toString()
+    }
+
+    private fun buildSkillsText(playerCharacter: PlayerCharacter): String {
+        val stringBuilder = StringBuilder()
+
         stringBuilder.append("Strength: ${playerCharacter.strength}\n")
         stringBuilder.append("Agility: ${playerCharacter.agility}\n")
         stringBuilder.append("Constitution: ${playerCharacter.constitution}\n")
-        stringBuilder.append("Health: ${playerCharacter.currentHealth}\n")
-        stringBuilder.append("Is Knocked: ${playerCharacter.isKnocked()}\n")
-        stringBuilder.append("Level: ${playerCharacter.level}\n")
-        stringBuilder.append("Damage: ${playerCharacter.damage.map { it.roll() }}\n")
 
         return stringBuilder.toString()
     }
 }
+

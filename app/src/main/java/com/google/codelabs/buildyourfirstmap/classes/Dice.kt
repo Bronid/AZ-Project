@@ -20,6 +20,17 @@ class Dice(val type: DiceType) : Serializable {
         }
     }
 
+    override fun toString(): String {
+        return when (type) {
+            DiceType.D4 -> "D4"
+            DiceType.D6 -> "D6"
+            DiceType.D8 -> "D8"
+            DiceType.D10 -> "D10"
+            DiceType.D12 -> "D12"
+            DiceType.D20 -> "D20"
+        }
+    }
+
     fun copy(): Dice {
         return Dice(type)
     }

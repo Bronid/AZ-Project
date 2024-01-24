@@ -157,6 +157,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 // Удаляем предмет из инвентаря
                 matchingItem?.let { currentCharacter?.inventory?.remove(it) }
+                Toast.makeText(this, "You used ${removedItem.name}", Toast.LENGTH_LONG).show()
             }
 
             // Здесь вы можете обновить интерфейс MapActivity с учетом изменений в персонаже
@@ -323,5 +324,3 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 }
-
-
