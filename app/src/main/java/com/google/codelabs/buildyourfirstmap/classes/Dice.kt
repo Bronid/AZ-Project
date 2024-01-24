@@ -1,5 +1,6 @@
 package com.google.codelabs.buildyourfirstmap.classes
 
+import org.bson.Document
 import java.io.Serializable
 import kotlin.random.Random
 
@@ -29,6 +30,10 @@ class Dice(val type: DiceType) : Serializable {
             DiceType.D12 -> "D12"
             DiceType.D20 -> "D20"
         }
+    }
+
+    fun toDocument(): Document {
+        return Document("type", type.name)
     }
 
     fun copy(): Dice {

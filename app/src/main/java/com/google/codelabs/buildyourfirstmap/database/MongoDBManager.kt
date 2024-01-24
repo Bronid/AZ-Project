@@ -5,6 +5,7 @@ import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
 import com.google.codelabs.buildyourfirstmap.classes.GameItemArmor
 import com.google.codelabs.buildyourfirstmap.classes.GameItemWeapon
+import com.google.codelabs.buildyourfirstmap.classes.GameItemHeal
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import com.mongodb.MongoClient
@@ -55,28 +56,9 @@ class MongoDBManager {
             .append("currentExperience", playerCharacter.currentExperience)
             .append("currentHealth", playerCharacter.currentHealth)
             .append("isKnocked", playerCharacter.isKnocked)
-            .append("inventory", playerCharacter.inventory.map { item ->
-                Document()
-                    .append("name", item.name)
-                    .append("description", item.description)
-                    .append("dangerLevel", item.dangerLevel.name)
-            })
-            .append("armor", playerCharacter.armor?.let {
-                Document()
-                    .append("name", it.name)
-                    .append("description", it.description)
-                    .append("dangerLevel", it.dangerLevel.name)
-                    .append("defense", it.defense)
-            })
-            .append("weapon", playerCharacter.weapon?.let { weapon ->
-                Document()
-                    .append("name", weapon.name)
-                    .append("description", weapon.description)
-                    .append("dangerLevel", weapon.dangerLevel.name)
-                    .append("damage", weapon.damage.map { dice ->
-                        Document().append("type", dice.type.name)
-                    })
-            })
+            .append("inventory", playerCharacter.inventory.map { item -> item.toDocument() }) // используем toDocument()
+            .append("armor", playerCharacter.armor?.toDocument()) // используем toDocument()
+            .append("weapon", playerCharacter.weapon?.toDocument()) // используем toDocument()
             .append("skillPoints", playerCharacter.skillPoints)
             .append("strength", playerCharacter.strength)
             .append("agility", playerCharacter.agility)
@@ -114,28 +96,33 @@ class MongoDBManager {
                 currentExperience = playerCharacterDocument.getInteger("currentExperience"),
                 currentHealth = playerCharacterDocument.getInteger("currentHealth"),
                 isKnocked = playerCharacterDocument.getBoolean("isKnocked"),
-                inventory = (playerCharacterDocument.get("inventory") as? List<Document>)?.map { itemDoc ->
-                    when (EventLevel.valueOf(itemDoc.getString("dangerLevel"))) {
-                        EventLevel.SAFE -> GameItem(
-                            name = itemDoc.getString("name"),
-                            description = itemDoc.getString("description"),
-                            dangerLevel = EventLevel.SAFE
-                        )
-                        EventLevel.NEUTRAL -> GameItem(
-                            name = itemDoc.getString("name"),
-                            description = itemDoc.getString("description"),
-                            dangerLevel = EventLevel.NEUTRAL
-                        )
-                        EventLevel.DANGER -> GameItem(
-                            name = itemDoc.getString("name"),
-                            description = itemDoc.getString("description"),
-                            dangerLevel = EventLevel.DANGER,
-                        )
-                        EventLevel.HARDCORE -> GameItem(
-                            name = itemDoc.getString("name"),
-                            description = itemDoc.getString("description"),
-                            dangerLevel = EventLevel.HARDCORE
-                        )
+                inventory = (playerCharacterDocument.get("inventory") as? List<Document>)?.mapNotNull { itemDoc ->
+                    itemDoc?.let {
+                        when (it.getString("type")) {
+                            "GameItemHeal" -> GameItemHeal(
+                                name = it.getString("name") ?: "",
+                                description = it.getString("description") ?: "",
+                                dangerLevel = EventLevel.valueOf(it.getString("dangerLevel") ?: EventLevel.SAFE.name),
+                                diceList = (it.get("diceList") as? List<Document>)?.map { diceDoc ->
+                                    Dice(Dice.DiceType.valueOf(diceDoc.getString("type") ?: Dice.DiceType.D4.name))
+                                } ?: emptyList()
+                            )
+                            "GameItemArmor" -> GameItemArmor(
+                                name = it.getString("name") ?: "",
+                                description = it.getString("description") ?: "",
+                                dangerLevel = EventLevel.valueOf(it.getString("dangerLevel") ?: EventLevel.SAFE.name),
+                                defense = it.getInteger("defense") ?: 0
+                            )
+                            "GameItemWeapon" -> GameItemWeapon(
+                                name = it.getString("name") ?: "",
+                                description = it.getString("description") ?: "",
+                                dangerLevel = EventLevel.valueOf(it.getString("dangerLevel") ?: EventLevel.SAFE.name),
+                                damage = (it.get("damage") as? List<Document>)?.map { diceDoc ->
+                                    Dice(Dice.DiceType.valueOf(diceDoc.getString("type") ?: Dice.DiceType.D4.name))
+                                } ?: emptyList()
+                            )
+                            else -> null
+                        }
                     }
                 }?.toMutableList() ?: mutableListOf(),
                 armor = playerCharacterDocument.get("armor")?.let { armorValue ->
