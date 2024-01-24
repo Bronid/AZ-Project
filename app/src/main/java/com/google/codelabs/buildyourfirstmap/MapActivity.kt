@@ -1,6 +1,7 @@
 package com.google.codelabs.buildyourfirstmap
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.EventManager
+import com.google.codelabs.buildyourfirstmap.classes.GameItem
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import java.util.*
@@ -79,7 +81,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         inventoryButton.setOnClickListener {
             val intent = Intent(this@MapActivity, InventoryActivity::class.java)
             intent.putExtra("playerCharacter", currentCharacter)
-            startActivity(intent)
+            startActivityForResult(intent, INVENTORY_REQUEST_CODE)
         }
     }
     private fun updateZoneLocation() {
@@ -135,6 +137,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == INVENTORY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val healAmount = data?.getIntExtra("healAmount", 0) ?: 0
+            val removedItem = data?.getSerializableExtra("removedItem") as? GameItem
+
+            // Обновление здоровья и инвентаря в MapActivity
+            currentCharacter?.changeHealth(healAmount)
+
+            if (removedItem != null) {
+                // Найдем соответствующий предмет в инвентаре по имени
+                val matchingItem = currentCharacter?.inventory?.find { it.name == removedItem.name }
+
+                // Удаляем предмет из инвентаря
+                matchingItem?.let { currentCharacter?.inventory?.remove(it) }
+            }
+
+            // Здесь вы можете обновить интерфейс MapActivity с учетом изменений в персонаже
+        }
+    }
+
+
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
@@ -199,6 +225,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
+        const val INVENTORY_REQUEST_CODE = 1
     }
 
     private val infectionZones = mutableListOf<Circle>()
