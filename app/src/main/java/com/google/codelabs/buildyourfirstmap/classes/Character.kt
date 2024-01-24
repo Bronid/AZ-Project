@@ -33,6 +33,7 @@ data class PlayerCharacter(
     var nickname: String,
     var description: String,
     var currentExperience: Int,
+    var currentHealth: Int,
     var inventory: MutableList<GameItem>,
     var armor: GameItemArmor?,
     var weapon: GameItemWeapon?,
@@ -41,13 +42,11 @@ data class PlayerCharacter(
     var agility: Int, // повышает защиту
     var constitution: Int, // здоровье
 ) : Serializable {
-    private var health = getMaxHealth()
     private var isKnocked = false
     var level = LevelManager.calculateLevel(currentExperience)
     var damage: Stack<Dice> = Stack()
 
     init {
-        health = getMaxHealth()
         level = LevelManager.calculateLevel(currentExperience)
         updateDamage()
     }
@@ -73,22 +72,18 @@ data class PlayerCharacter(
     }
 
     fun changeHealth(num: Int) {
-        if (health + num <= 0){
-            health = 0
+        if (currentHealth + num <= 0){
+            currentHealth = 0
             isKnocked = true
             return
         }
-        else if(health + num > getMaxHealth()){
-            health = getMaxHealth()
+        else if(currentHealth + num > getMaxHealth()){
+            currentHealth = getMaxHealth()
             return
         }
         else {
-            health += num
+            currentHealth += num
         }
-    }
-
-    fun getCurrentHealth(): Int{
-        return health
     }
 
     fun getMaxHealth(): Int {
@@ -110,14 +105,13 @@ data class PlayerCharacter(
         stringBuilder.append("Nickname: ${nickname ?: "null"}\n")
         stringBuilder.append("Description: ${description ?: "null"}\n")
         stringBuilder.append("Current Experience: ${currentExperience}\n")
-        stringBuilder.append("Inventory: ${inventory ?: "null"}\n")
         stringBuilder.append("Armor: ${armor ?: "null"}\n")
         stringBuilder.append("Weapon: ${weapon ?: "null"}\n")
         stringBuilder.append("Skill Points: ${skillPoints}\n")
         stringBuilder.append("Strength: ${strength}\n")
         stringBuilder.append("Agility: ${agility}\n")
         stringBuilder.append("Constitution: ${constitution}\n")
-        stringBuilder.append("Health: ${health}\n")
+        stringBuilder.append("Health: ${currentHealth}\n")
         stringBuilder.append("Is Knocked: ${isKnocked}\n")
         stringBuilder.append("Level: ${level}\n")
         stringBuilder.append("Damage: ${damage.map { it.roll() }}\n")

@@ -134,7 +134,7 @@ class EventManager(private val character: PlayerCharacter){
             currentPlayerTurn = !currentPlayerTurn
 
             // Print the current health after each round
-            println("Your health: ${character.getCurrentHealth()}/${character.getMaxHealth()}, ${hostile.name}'s health: ${hostile.health}")
+            println("Your health: ${character.currentHealth}/${character.getMaxHealth()}, ${hostile.name}'s health: ${hostile.health}")
 
             // Check for victory after updating health
             if (hostile.health <= 0) {

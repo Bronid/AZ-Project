@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
+import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
@@ -30,6 +31,7 @@ import com.google.codelabs.buildyourfirstmap.classes.EventManager
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
+import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
 import java.util.*
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -41,6 +43,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var inRaid = false
     private var em: EventManager? = null
     private var currentZoneLevel: EventLevel = EventLevel.NEUTRAL
+    private val mongoDBManager = MongoDBManager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,6 +180,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (inRaid && currentCharacter?.isKnocked() == false) {
             updateZoneLocation()
             eventText.text = em?.generateRandomEvent()
+            val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
+            updateCharacterAsyncTask.execute(currentCharacter!!)
         } else {
             eventText.text = getString(R.string.NotRaid)
         }
@@ -302,6 +307,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             results
         )
         return results[0]
+    }
+
+    class UpdateCharacterAsyncTask(private val mongoDBManager: MongoDBManager) : AsyncTask<PlayerCharacter, Void, Unit>() {
+
+        override fun doInBackground(vararg characters: PlayerCharacter) {
+            // Выполните вашу асинхронную операцию здесь (например, добавление или обновление в базе данных)
+            mongoDBManager.addOrUpdatePlayerCharacter(characters[0])
+        }
+
+        override fun onPostExecute(result: Unit?) {
+            // Этот метод вызывается в основном потоке после завершения doInBackground
+            // Здесь вы можете обновить UI, если это необходимо
+        }
     }
 
 }

@@ -15,7 +15,7 @@ import org.bson.Document
 
 class MongoDBManager {
     private val DATABASE_NAME = "ArthunterDB"
-    private val CONNECTION_STRING = "mongodb://192.168.0.145:27017"
+    private val CONNECTION_STRING = "mongodb://192.168.1.2:27017"
 
     private val mongoClient: MongoClient
     private val database: MongoDatabase
@@ -53,6 +53,7 @@ class MongoDBManager {
             .append("nickname", playerCharacter.nickname)
             .append("description", playerCharacter.description)
             .append("currentExperience", playerCharacter.currentExperience)
+            .append("currentHealth", playerCharacter.currentHealth)  // Добавляем текущее здоровье
             .append("inventory", playerCharacter.inventory.map { item ->
                 Document()
                     .append("name", item.name)
@@ -110,6 +111,7 @@ class MongoDBManager {
                 nickname = playerCharacterDocument.getString("nickname"),
                 description = playerCharacterDocument.getString("description"),
                 currentExperience = playerCharacterDocument.getInteger("currentExperience"),
+                currentHealth = playerCharacterDocument.getInteger("currentHealth"),
                 inventory = (playerCharacterDocument.get("inventory") as? List<Document>)?.map { itemDoc ->
                     when (EventLevel.valueOf(itemDoc.getString("dangerLevel"))) {
                         EventLevel.SAFE -> GameItem(
@@ -167,6 +169,7 @@ class MongoDBManager {
             null
         }
     }
+
 
     fun closeConnection() {
         mongoClient.close()

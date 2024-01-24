@@ -59,7 +59,7 @@ class StatsActivity : AppCompatActivity() {
         stringBuilder.append("Strength: ${playerCharacter.strength}\n")
         stringBuilder.append("Agility: ${playerCharacter.agility}\n")
         stringBuilder.append("Constitution: ${playerCharacter.constitution}\n")
-        stringBuilder.append("Health: ${playerCharacter.getCurrentHealth()}\n")
+        stringBuilder.append("Health: ${playerCharacter.currentHealth}\n")
         stringBuilder.append("Is Knocked: ${playerCharacter.isKnocked()}\n")
         stringBuilder.append("Level: ${playerCharacter.level}\n")
         stringBuilder.append("Damage: ${playerCharacter.damage.map { it.roll() }}\n")
