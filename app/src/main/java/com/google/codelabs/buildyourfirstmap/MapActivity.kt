@@ -79,7 +79,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             } else if (em?.inBattle == true) {
                 Toast.makeText(this, "You can't run away from battle", Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(this, "woops", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "You are not able to do this", Toast.LENGTH_LONG).show()
             }
         }
         statsButton.setOnClickListener {
@@ -212,6 +212,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun onLocationChanged(location: Location) {
         currentLatLng = LatLng(location.latitude, location.longitude)
         val eventText: TextView = findViewById(R.id.generator_text)
+        val goToRaid: Button = findViewById(R.id.button_start)
 
         if (inRaid && currentCharacter?.isKnocked == false) {
             updateZoneLocation()
@@ -219,6 +220,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         else {
             if (currentCharacter?.isKnocked == true) {
+                inRaid = false
+                goToRaid.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
                 currentCharacter?.changeHealth(1)
                 eventText.text = getString(R.string.healing)
                 if (currentCharacter?.currentHealth == currentCharacter?.getMaxHealth()) {
@@ -229,6 +232,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 eventText.text = getString(R.string.NotRaid)
             }
         }
+        val healthIndicatorView: TextView = findViewById(R.id.healthIndicator)
+        healthIndicatorView.text = currentCharacter?.currentHealth.toString()
         val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
         updateCharacterAsyncTask.execute(currentCharacter!!)
 
@@ -285,7 +290,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val tempLatLng = currentLatLng
         if (tempLatLng != null) {
             // Move the camera to the user's current location
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, 17f)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, currentCharacter!!.getFov())
             googleMap.moveCamera(cameraUpdate)
 
             googleMap.uiSettings.isZoomGesturesEnabled = false
