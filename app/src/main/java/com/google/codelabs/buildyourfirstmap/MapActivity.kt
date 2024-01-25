@@ -23,13 +23,11 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
 import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.EventManager
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
@@ -40,7 +38,7 @@ import com.google.codelabs.buildyourfirstmap.classes.User
 import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
 import java.util.*
 
-class MapActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapActivity : AppCompatActivity() {
     private var fusedLocationClient: FusedLocationProviderClient? = null
     private var googleMap: GoogleMap? = null
     private var currentLatLng: LatLng? = null
@@ -55,6 +53,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private val MAX_ZONE_LIFESPAN = 60 * 60 * 1000L // 60 minutes
 
     private val zoneTimers = mutableListOf<Handler>()
+    private val mapUpdateInterval = 10000L // 10 seconds
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,6 +96,44 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             intent.putExtra("playerCharacter", currentCharacter)
             startActivityForResult(intent, INVENTORY_REQUEST_CODE)
         }
+
+        // Schedule map updates every 10 seconds
+        val mapUpdateTimer = Timer()
+        mapUpdateTimer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                runOnUiThread {
+                    updateMap()
+                }
+            }
+        }, 0, mapUpdateInterval)
+    }
+
+    private fun updateMap() {
+        val healthIndicatorView: TextView = findViewById(R.id.healthIndicator)
+        healthIndicatorView.text = currentCharacter?.currentHealth.toString()
+        val eventText: TextView = findViewById(R.id.generator_text)
+        val goToRaid: Button = findViewById(R.id.button_start)
+
+        if (inRaid && currentCharacter?.isKnocked == false) {
+            updateZoneLocation()
+            eventText.text = em?.generateRandomEvent()
+        } else {
+            if (currentCharacter?.isKnocked == true) {
+                inRaid = false
+                goToRaid.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
+                currentCharacter?.changeHealth(1)
+                eventText.text = getString(R.string.healing)
+                if (currentCharacter?.currentHealth == currentCharacter?.getMaxHealth()) {
+                    currentCharacter!!.isKnocked = false
+                }
+            } else {
+                eventText.text = getString(R.string.NotRaid)
+            }
+        }
+        val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
+        updateCharacterAsyncTask.execute(currentCharacter!!)
+        spawnInfectionZones()
+        println("Map updated")
     }
 
     private fun updateZoneLocation() {
@@ -117,6 +154,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             supportFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
         mapFragment?.getMapAsync { map ->
             googleMap = map
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -128,15 +166,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 requestLocationPermissions()
             }
             googleMap?.isMyLocationEnabled = true
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-            requestLocationUpdates()
 
             // Apply dark theme to the map
-            setMapStyle(googleMap)
+            setMapStyle()
+
+            googleMap?.uiSettings?.isZoomGesturesEnabled = false
+            googleMap?.uiSettings?.isScrollGesturesEnabled = false
+
+            // После инициализации fusedLocationClient запросите обновление местоположения
+            requestLocationUpdates()
         }
     }
 
-    private fun setMapStyle(googleMap: GoogleMap?) {
+    private fun setMapStyle() {
         try {
             // Load the raw resource JSON file for the dark theme
             val style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_dark)
@@ -150,10 +192,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun requestLocationUpdates() {
         val locationRequest = LocationRequest.create()
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(75000)
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY).setInterval(5000L)
 
-        if (ActivityCompat.checkSelfPermission(
+        if (fusedLocationClient != null &&
+            ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -214,33 +256,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun onLocationChanged(location: Location) {
         currentLatLng = LatLng(location.latitude, location.longitude)
-        val eventText: TextView = findViewById(R.id.generator_text)
-        val goToRaid: Button = findViewById(R.id.button_start)
-
-        if (inRaid && currentCharacter?.isKnocked == false) {
-            updateZoneLocation()
-            eventText.text = em?.generateRandomEvent()
-        } else {
-            if (currentCharacter?.isKnocked == true) {
-                inRaid = false
-                goToRaid.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
-                currentCharacter?.changeHealth(1)
-                eventText.text = getString(R.string.healing)
-                if (currentCharacter?.currentHealth == currentCharacter?.getMaxHealth()) {
-                    currentCharacter!!.isKnocked = false
-                }
-            } else {
-                eventText.text = getString(R.string.NotRaid)
-            }
-        }
-        val healthIndicatorView: TextView = findViewById(R.id.healthIndicator)
-        healthIndicatorView.text = currentCharacter?.currentHealth.toString()
-        val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
-        updateCharacterAsyncTask.execute(currentCharacter!!)
-
-        if (googleMap != null) {
-            onMapReady(googleMap!!)
-        }
+        // Move the camera to the user's current location
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng!!, currentCharacter!!.getFov())
+        googleMap?.moveCamera(cameraUpdate)
     }
 
     private fun areLocationPermissionsGranted(): Boolean {
@@ -286,17 +304,37 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val infectionZones = mutableListOf<Circle>()
 
-    override fun onMapReady(googleMap: GoogleMap) {
+    private fun isInCollision(currentLatLng: LatLng, circle: Circle): Boolean {
+        val distance = calculateDistance(currentLatLng, circle.center)
+        return distance < circle.radius
+    }
 
+    private fun calculateDistance(point1: LatLng, point2: LatLng): Float {
+        val results = FloatArray(1)
+        Location.distanceBetween(
+            point1.latitude, point1.longitude,
+            point2.latitude, point2.longitude,
+            results
+        )
+        return results[0]
+    }
+
+    class UpdateCharacterAsyncTask(private val mongoDBManager: MongoDBManager) :
+        AsyncTask<PlayerCharacter, Void, Unit>() {
+
+        override fun doInBackground(vararg characters: PlayerCharacter) {
+            mongoDBManager.addOrUpdatePlayerCharacter(characters[0])
+        }
+
+        override fun onPostExecute(result: Unit?) {
+            // Handle UI updates if needed
+        }
+    }
+
+    private fun spawnInfectionZones() {
+        println("In spawn zones start")
         if (infectionZones.size < 20) {
-            val tempLatLng = currentLatLng
-            if (tempLatLng != null) {
-                // Move the camera to the user's current location
-                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, 17f)
-                googleMap.moveCamera(cameraUpdate)
-
-                googleMap.uiSettings.isZoomGesturesEnabled = false
-                googleMap.uiSettings.isScrollGesturesEnabled = false
+            if (currentLatLng != null) {
 
                 val randomLatLng = generateRandomLatLng(currentLatLng!!)
                 val randomRadius = Random().nextDouble() * 150 + 150 // Random radius between 150 and 300 meters
@@ -312,6 +350,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 circleOptions.fillColor(fillColor)
 
                 val circle = googleMap?.addCircle(circleOptions)
+                println("circle added")
                 circle?.tag = level
 
                 circle?.let {
@@ -320,6 +359,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+        println("In spawn zones end")
     }
 
     private fun startZoneTimer(zone: Circle) {
@@ -373,30 +413,4 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         return LatLng(lat, lng)
     }
 
-    private fun isInCollision(currentLatLng: LatLng, circle: Circle): Boolean {
-        val distance = calculateDistance(currentLatLng, circle.center)
-        return distance < circle.radius
-    }
-
-    private fun calculateDistance(point1: LatLng, point2: LatLng): Float {
-        val results = FloatArray(1)
-        Location.distanceBetween(
-            point1.latitude, point1.longitude,
-            point2.latitude, point2.longitude,
-            results
-        )
-        return results[0]
-    }
-
-    class UpdateCharacterAsyncTask(private val mongoDBManager: MongoDBManager) :
-        AsyncTask<PlayerCharacter, Void, Unit>() {
-
-        override fun doInBackground(vararg characters: PlayerCharacter) {
-            mongoDBManager.addOrUpdatePlayerCharacter(characters[0])
-        }
-
-        override fun onPostExecute(result: Unit?) {
-            // Handle UI updates if needed
-        }
-    }
 }
