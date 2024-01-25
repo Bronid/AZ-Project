@@ -61,7 +61,7 @@ class MongoDBManager {
             .append("weapon", playerCharacter.weapon?.toDocument()) // используем toDocument()
             .append("skillPoints", playerCharacter.skillPoints)
             .append("strength", playerCharacter.strength)
-            .append("agility", playerCharacter.agility)
+            .append("perception", playerCharacter.perception)
             .append("constitution", playerCharacter.constitution)
 
         playerCharacterCollection.createIndex(
@@ -151,7 +151,7 @@ class MongoDBManager {
                 },
                 skillPoints = playerCharacterDocument.getInteger("skillPoints"),
                 strength = playerCharacterDocument.getInteger("strength"),
-                agility = playerCharacterDocument.getInteger("agility"),
+                perception = playerCharacterDocument.getInteger("perception"),
                 constitution = playerCharacterDocument.getInteger("constitution")
             )
         } else {

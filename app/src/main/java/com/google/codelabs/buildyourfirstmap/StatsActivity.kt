@@ -74,8 +74,8 @@ class StatsActivity : AppCompatActivity() {
         val stringBuilder = StringBuilder()
 
         stringBuilder.append("Damage: ${playerCharacter.damageToString()}\n")
-        stringBuilder.append("Armor: ${playerCharacter.armor ?: "null"}\n")
-        stringBuilder.append("Weapon: ${playerCharacter.weapon ?: "null"}\n")
+        stringBuilder.append("Armor: ${playerCharacter.armor?.name ?: "null"}\n")
+        stringBuilder.append("Weapon: ${playerCharacter.weapon?.name ?: "null"}\n")
 
         return stringBuilder.toString()
     }
@@ -84,7 +84,7 @@ class StatsActivity : AppCompatActivity() {
         val stringBuilder = StringBuilder()
 
         stringBuilder.append("Strength: ${playerCharacter.strength}\n")
-        stringBuilder.append("Agility: ${playerCharacter.agility}\n")
+        stringBuilder.append("Perception: ${playerCharacter.perception}\n")
         stringBuilder.append("Constitution: ${playerCharacter.constitution}\n")
 
         return stringBuilder.toString()
