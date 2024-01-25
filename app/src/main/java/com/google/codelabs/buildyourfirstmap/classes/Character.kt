@@ -54,7 +54,7 @@ data class PlayerCharacter(
     }
 
     fun getFov(): Float {
-        return 15 + (perception.toFloat() * 0.5F)
+        return 17 - (perception.toFloat() * 0.2F)
     }
 
     fun updateDamage(){
