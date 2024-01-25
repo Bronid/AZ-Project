@@ -199,7 +199,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-
+//FOR MERGE((((((((
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
