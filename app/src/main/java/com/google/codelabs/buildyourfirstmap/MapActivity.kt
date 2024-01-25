@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -20,12 +21,15 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.codelabs.buildyourfirstmap.classes.EventLevel
 import com.google.codelabs.buildyourfirstmap.classes.EventManager
 import com.google.codelabs.buildyourfirstmap.classes.GameItem
@@ -35,10 +39,6 @@ import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
 import java.util.*
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.CameraUpdateFactory
-
-
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var fusedLocationClient: FusedLocationProviderClient? = null
@@ -50,6 +50,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var em: EventManager? = null
     private var currentZoneLevel: EventLevel = EventLevel.NEUTRAL
     private val mongoDBManager = MongoDBManager()
+
+    private val MIN_ZONE_LIFESPAN = 20 * 60 * 1000L // 20 minutes
+    private val MAX_ZONE_LIFESPAN = 60 * 60 * 1000L // 60 minutes
+
+    private val zoneTimers = mutableListOf<Handler>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +77,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val statsButton: ImageButton = findViewById(R.id.stats_button)
         val inventoryButton: ImageButton = findViewById(R.id.inventory_button)
         goToRaid.setOnClickListener {
-            if(currentCharacter?.isKnocked == false && em?.inBattle == false){
+            if (currentCharacter?.isKnocked == false && em?.inBattle == false) {
                 inRaid = !inRaid
                 val colorResId = if (inRaid) R.color.rog else R.color.orange
                 goToRaid.setBackgroundColor(ContextCompat.getColor(this, colorResId))
@@ -93,7 +98,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivityForResult(intent, INVENTORY_REQUEST_CODE)
         }
     }
+
     private fun updateZoneLocation() {
+        stopZoneTimers()
         for (zone in infectionZones) {
             if (isInCollision(currentLatLng!!, zone)) {
                 currentZoneLevel = zone.tag as EventLevel
@@ -194,12 +201,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 currentCharacter?.armor = matchingItem as GameItemArmor?
                 Toast.makeText(this, "You equipped ${equippedArmor.name}", Toast.LENGTH_LONG).show()
             }
-
         }
-
     }
-
-//FOR MERGE((((((((
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
@@ -217,8 +220,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (inRaid && currentCharacter?.isKnocked == false) {
             updateZoneLocation()
             eventText.text = em?.generateRandomEvent()
-        }
-        else {
+        } else {
             if (currentCharacter?.isKnocked == true) {
                 inRaid = false
                 goToRaid.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
@@ -227,8 +229,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (currentCharacter?.currentHealth == currentCharacter?.getMaxHealth()) {
                     currentCharacter!!.isKnocked = false
                 }
-            }
-            else {
+            } else {
                 eventText.text = getString(R.string.NotRaid)
             }
         }
@@ -236,7 +237,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         healthIndicatorView.text = currentCharacter?.currentHealth.toString()
         val updateCharacterAsyncTask = UpdateCharacterAsyncTask(mongoDBManager)
         updateCharacterAsyncTask.execute(currentCharacter!!)
-
 
         if (googleMap != null) {
             onMapReady(googleMap!!)
@@ -287,38 +287,64 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private val infectionZones = mutableListOf<Circle>()
 
     override fun onMapReady(googleMap: GoogleMap) {
-        val tempLatLng = currentLatLng
-        if (tempLatLng != null) {
-            // Move the camera to the user's current location
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, currentCharacter!!.getFov())
-            googleMap.moveCamera(cameraUpdate)
 
-            googleMap.uiSettings.isZoomGesturesEnabled = false
-            googleMap.uiSettings.isScrollGesturesEnabled = false
+        if (infectionZones.size < 20) {
+            val tempLatLng = currentLatLng
+            if (tempLatLng != null) {
+                // Move the camera to the user's current location
+                val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, 17f)
+                googleMap.moveCamera(cameraUpdate)
 
+                googleMap.uiSettings.isZoomGesturesEnabled = false
+                googleMap.uiSettings.isScrollGesturesEnabled = false
 
-            val randomLatLng = generateRandomLatLng(currentLatLng!!)
-            val radius = 100.0
-            val level = generateRandomEventLevel()
+                val randomLatLng = generateRandomLatLng(currentLatLng!!)
+                val randomRadius = Random().nextDouble() * 150 + 150 // Random radius between 150 and 300 meters
+                val level = generateRandomEventLevel()
 
-            val circleOptions = CircleOptions()
-                .center(randomLatLng)
-                .radius(radius)
-                .strokeWidth(2f)
-                .strokeColor(getColorForLevel(level))
+                val circleOptions = CircleOptions()
+                    .center(randomLatLng)
+                    .radius(randomRadius)
+                    .strokeWidth(2f)
+                    .strokeColor(getColorForLevel(level))
 
-            val fillColor = getColorForLevel(level) and 0x00FFFFFF or (0x40 shl 24)
-            circleOptions.fillColor(fillColor)
+                val fillColor = getColorForLevel(level) and 0x00FFFFFF or (0x40 shl 24)
+                circleOptions.fillColor(fillColor)
 
-            val circle = googleMap?.addCircle(circleOptions)
-            circle?.tag = level
+                val circle = googleMap?.addCircle(circleOptions)
+                circle?.tag = level
 
-            circle?.let { infectionZones.add(it) }
-            // ... (rest of your code)
+                circle?.let {
+                    infectionZones.add(it)
+                    startZoneTimer(it)
+                }
+            }
         }
     }
 
+    private fun startZoneTimer(zone: Circle) {
+        val timerHandler = Handler()
+        val timerRunnable = object : Runnable {
+            override fun run() {
+                removeZone(zone)
+            }
+        }
+        val ZONE_LIFESPAN = Random().nextLong() * MAX_ZONE_LIFESPAN + MIN_ZONE_LIFESPAN
+        timerHandler.postDelayed(timerRunnable, ZONE_LIFESPAN)
+        zoneTimers.add(timerHandler)
+    }
 
+    private fun stopZoneTimers() {
+        for (timerHandler in zoneTimers) {
+            timerHandler.removeCallbacksAndMessages(null)
+        }
+        zoneTimers.clear()
+    }
+
+    private fun removeZone(zone: Circle) {
+        zone.remove()
+        infectionZones.remove(zone)
+    }
 
     private fun generateRandomEventLevel(): EventLevel {
         val random = Random()
@@ -335,31 +361,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-
-
     private fun generateRandomLatLng(currentLatLng: LatLng): LatLng {
         val random = Random()
 
-        // Определяем коэффициенты ограничения
-        val latDeviation = 0.1
-        val lngDeviation = 0.1
+        val latDeviation = 0.02
+        val lngDeviation = 0.02
 
-        // Генерируем случайные координаты в заданном диапазоне от текущей GPS-метки
         val lat = currentLatLng.latitude + (random.nextDouble() - 0.5) * latDeviation
         val lng = currentLatLng.longitude + (random.nextDouble() - 0.5) * lngDeviation
 
         return LatLng(lat, lng)
     }
 
-
-    // Метод для проверки коллизии текущего местоположения с кругом
     private fun isInCollision(currentLatLng: LatLng, circle: Circle): Boolean {
         val distance = calculateDistance(currentLatLng, circle.center)
         return distance < circle.radius
     }
 
-
-    // Метод для вычисления расстояния между двумя точками на карте
     private fun calculateDistance(point1: LatLng, point2: LatLng): Float {
         val results = FloatArray(1)
         Location.distanceBetween(
@@ -370,17 +388,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         return results[0]
     }
 
-    class UpdateCharacterAsyncTask(private val mongoDBManager: MongoDBManager) : AsyncTask<PlayerCharacter, Void, Unit>() {
+    class UpdateCharacterAsyncTask(private val mongoDBManager: MongoDBManager) :
+        AsyncTask<PlayerCharacter, Void, Unit>() {
 
         override fun doInBackground(vararg characters: PlayerCharacter) {
-            // Выполните вашу асинхронную операцию здесь (например, добавление или обновление в базе данных)
             mongoDBManager.addOrUpdatePlayerCharacter(characters[0])
         }
 
         override fun onPostExecute(result: Unit?) {
-            // Этот метод вызывается в основном потоке после завершения doInBackground
-            // Здесь вы можете обновить UI, если это необходимо
+            // Handle UI updates if needed
         }
     }
-
 }
