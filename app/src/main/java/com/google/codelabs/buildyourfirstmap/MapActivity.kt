@@ -9,8 +9,10 @@ import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +57,8 @@ class MapActivity : AppCompatActivity() {
     private val zoneTimers = mutableListOf<Handler>()
     private val mapUpdateInterval = 10000L // 10 seconds
 
+    private var progressBarMapUpdate: ProgressBar? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -75,6 +79,8 @@ class MapActivity : AppCompatActivity() {
         val goToRaid: Button = findViewById(R.id.button_start)
         val statsButton: ImageButton = findViewById(R.id.stats_button)
         val inventoryButton: ImageButton = findViewById(R.id.inventory_button)
+        progressBarMapUpdate = findViewById(R.id.loading_progress)
+
         goToRaid.setOnClickListener {
             if (currentCharacter?.isKnocked == false && em?.inBattle == false) {
                 inRaid = !inRaid
@@ -109,6 +115,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     private fun updateMap() {
+        startMapUpdateProgressBar()
         val healthIndicatorView: TextView = findViewById(R.id.healthIndicator)
         healthIndicatorView.text = currentCharacter?.currentHealth.toString()
         val eventText: TextView = findViewById(R.id.generator_text)
@@ -135,6 +142,28 @@ class MapActivity : AppCompatActivity() {
         spawnInfectionZones()
         println("Map updated")
     }
+
+    private fun startMapUpdateProgressBar() {
+        progressBarMapUpdate?.let {
+            it.progress = 0
+            it.max = (mapUpdateInterval / 1000).toInt()
+
+            val progressHandler = Handler()
+            val progressRunnable = object : Runnable {
+                var progressStatus = 0
+
+                override fun run() {
+                    if (progressStatus < it.max) {
+                        it.progress = progressStatus++
+                        progressHandler.postDelayed(this, 1000) // обновление каждую секунду
+                    }
+                }
+            }
+
+            progressHandler.postDelayed(progressRunnable, 0)
+        }
+    }
+
 
     private fun updateZoneLocation() {
         stopZoneTimers()
