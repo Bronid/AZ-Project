@@ -33,6 +33,10 @@ import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
 import java.util.*
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.CameraUpdateFactory
+
+
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var fusedLocationClient: FusedLocationProviderClient? = null
@@ -117,6 +121,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             googleMap?.isMyLocationEnabled = true
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
             requestLocationUpdates()
+
+            // Apply dark theme to the map
+            setMapStyle(googleMap)
+        }
+    }
+
+    private fun setMapStyle(googleMap: GoogleMap?) {
+        try {
+            // Load the raw resource JSON file for the dark theme
+            val style = MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style_dark)
+
+            // Set the map style
+            googleMap?.setMapStyle(style)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -246,29 +265,39 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val infectionZones = mutableListOf<Circle>()
 
-    override fun onMapReady(p0: GoogleMap) {
-        if (currentLatLng != null) {
-            for (i in 1..5) {
-                val randomLatLng = generateRandomLatLng(currentLatLng!!)
-                val radius = 100.0
-                val level = generateRandomEventLevel()
+    override fun onMapReady(googleMap: GoogleMap) {
+        val tempLatLng = currentLatLng
+        if (tempLatLng != null) {
+            // Move the camera to the user's current location
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(tempLatLng, 17f)
+            googleMap.moveCamera(cameraUpdate)
 
-                val circleOptions = CircleOptions()
-                    .center(randomLatLng)
-                    .radius(radius)
-                    .strokeWidth(2f)
-                    .strokeColor(getColorForLevel(level))
+            googleMap.uiSettings.isZoomGesturesEnabled = false
+            googleMap.uiSettings.isScrollGesturesEnabled = false
 
-                val fillColor = getColorForLevel(level) and 0x00FFFFFF or (0x40 shl 24)
-                circleOptions.fillColor(fillColor)
 
-                val circle = googleMap?.addCircle(circleOptions)
-                circle?.tag = level
+            val randomLatLng = generateRandomLatLng(currentLatLng!!)
+            val radius = 100.0
+            val level = generateRandomEventLevel()
 
-                circle?.let { infectionZones.add(it) }
-            }
+            val circleOptions = CircleOptions()
+                .center(randomLatLng)
+                .radius(radius)
+                .strokeWidth(2f)
+                .strokeColor(getColorForLevel(level))
+
+            val fillColor = getColorForLevel(level) and 0x00FFFFFF or (0x40 shl 24)
+            circleOptions.fillColor(fillColor)
+
+            val circle = googleMap?.addCircle(circleOptions)
+            circle?.tag = level
+
+            circle?.let { infectionZones.add(it) }
+            // ... (rest of your code)
         }
     }
+
+
 
     private fun generateRandomEventLevel(): EventLevel {
         val random = Random()
