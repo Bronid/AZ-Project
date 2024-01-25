@@ -1,5 +1,6 @@
 package com.google.codelabs.buildyourfirstmap
 
+import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -9,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.codelabs.buildyourfirstmap.classes.PlayerCharacter
 import com.google.codelabs.buildyourfirstmap.classes.User
 import com.google.codelabs.buildyourfirstmap.database.MongoDBManager
-import android.os.AsyncTask
-
 
 class CreateCharacterActivity : AppCompatActivity() {
     private lateinit var nicknameEditText: EditText
@@ -22,6 +21,32 @@ class CreateCharacterActivity : AppCompatActivity() {
     private lateinit var createCharacterButton: Button
 
     private var remainingPoints = 5
+
+    private val onSeekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                val totalProgress =
+                    strengthSeekBar.progress + agilitySeekBar.progress + constitutionSeekBar.progress
+
+                if (totalProgress > 5) {
+                    // If the total progress exceeds the limit, prevent the change
+                    seekBar?.progress = (seekBar?.progress ?: 0) - (totalProgress - 5)
+                }
+
+                updatePointsRemaining()
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            // Nothing to do
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            // Nothing to do
+        }
+    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,27 +91,20 @@ class CreateCharacterActivity : AppCompatActivity() {
         }
     }
 
-    private val onSeekBarChangeListener = object : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            updatePointsRemaining()
-        }
-
-        override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            // Nothing to do
-        }
-
-        override fun onStopTrackingTouch(seekBar: SeekBar?) {
-            // Nothing to do
-        }
-    }
-
     private fun updatePointsRemaining() {
-        remainingPoints = 5 - (strengthSeekBar.progress + agilitySeekBar.progress + constitutionSeekBar.progress)
-        pointsRemainingTextView.text = getString(R.string.points_remaining, remainingPoints)
+        remainingPoints =
+            5 - (strengthSeekBar.progress + agilitySeekBar.progress + constitutionSeekBar.progress)
+
+        if (remainingPoints < 0) {
+            createCharacterButton.isEnabled = false
+            pointsRemainingTextView.text = getString(R.string.points_remaining_exceeded)
+        } else {
+            createCharacterButton.isEnabled = true
+            pointsRemainingTextView.text = getString(R.string.points_remaining, remainingPoints)
+        }
     }
 
     private inner class SaveCharacterTask : AsyncTask<Any, Void, PlayerCharacter>() {
-
         override fun doInBackground(vararg params: Any?): PlayerCharacter {
             val user = params[0] as User
             val nickname = params[1] as String
@@ -95,7 +113,10 @@ class CreateCharacterActivity : AppCompatActivity() {
             val agility = params[4] as Int
             val constitution = params[5] as Int
 
-            val character = PlayerCharacter(user.login, nickname, description, 0, (5 + constitution) + 2, false, mutableListOf(), null, null, 0, strength, agility, constitution)
+            val character = PlayerCharacter(
+                user.login, nickname, description, 0, (5 + constitution) + 2,
+                false, mutableListOf(), null, null, 0, strength, agility, constitution
+            )
 
             val mongoDBManager = MongoDBManager()
             mongoDBManager.addOrUpdatePlayerCharacter(character)
@@ -109,4 +130,3 @@ class CreateCharacterActivity : AppCompatActivity() {
         }
     }
 }
-

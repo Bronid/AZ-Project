@@ -22,5 +22,6 @@
   <string name="nickname">Nickname</string>
   <string name="description">Description</string>
   <string name="points_remaining">Points Remaining: %d</string>
+  <string name="points_remaining_exceeded">You have 0 points</string>
   <string name="create_character">Create Character</string>
 </resources>
